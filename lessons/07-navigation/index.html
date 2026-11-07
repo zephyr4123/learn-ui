@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 7 课 · iOS 页面结构与导航</title>
+<link rel="stylesheet" href="../../assets/lesson.css">
+<style>
+  /* 小号手机样张：只用来演示结构，尺寸按 iPhone 比例缩小 */
+  .mini { width: 300px; height: 600px; border-radius: 44px; padding: 9px; background: #121212; box-shadow: 0 0 0 1.5px #3a3a3c, 0 18px 36px -14px rgba(0,0,0,.35); margin: 0 auto; flex: none; }
+  .mini .scr { position: relative; width: 100%; height: 100%; border-radius: 36px; overflow: hidden; background: #f2f2f7; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; color: #000; }
+  .mini .sb { height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 26px 0 32px; font: 600 14px/1 -apple-system, sans-serif; position: relative; z-index: 3; }
+  .mini .sb::after { content: ""; position: absolute; left: 50%; top: 10px; transform: translateX(-50%); width: 92px; height: 26px; border-radius: 14px; background: #000; }
+  .phones { display: flex; flex-wrap: wrap; gap: 28px; justify-content: center; margin-top: 28px; }
+  .phone-cap { text-align: center; font-size: 14px; color: var(--text-2); margin: 12px 0 0; max-width: 300px; line-height: 1.6; }
+
+  /* 浮动标签栏（iOS 26 起的样子，示意） */
+  .tabbar { position: absolute; left: 12px; right: 12px; bottom: 14px; display: flex; gap: 8px; z-index: 4; }
+  .tabbar .bar { flex: 1; height: 58px; border-radius: 29px; display: flex; align-items: center; justify-content: space-around; padding: 0 6px; background: rgba(255,255,255,.78); -webkit-backdrop-filter: blur(14px) saturate(1.6); backdrop-filter: blur(14px) saturate(1.6); box-shadow: 0 0 0 .5px rgba(0,0,0,.08), 0 6px 20px rgba(0,0,0,.12); }
+  .tabbar .t { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10px; font-weight: 500; color: #1c1c1e; padding: 5px 10px; border-radius: 22px; }
+  .tabbar .t svg { width: 22px; height: 22px; }
+  .tabbar .t.on { color: #0066cc; background: rgba(0,0,0,.06); }
+  .tabbar .srch { width: 58px; height: 58px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.78); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: 0 0 0 .5px rgba(0,0,0,.08), 0 6px 20px rgba(0,0,0,.12); color: #1c1c1e; }
+  .tabbar .srch svg { width: 22px; height: 22px; }
+  .tabbar .t.plus { color: #fff; background: #ff2d55; padding: 8px 12px; }
+
+  .feed { padding: 4px 14px 90px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .feed i { display: block; height: 120px; border-radius: 12px; background: linear-gradient(160deg, #d9e2f5, #f3e3d6); }
+  .feed i:nth-child(3n) { height: 150px; background: linear-gradient(160deg, #e2f0e5, #dfe6f6); }
+  .h-big { font-size: 28px; font-weight: 700; padding: 6px 16px 10px; margin: 0; }
+
+  /* 大标题滚动 */
+  .navscroll { position: absolute; top: 44px; bottom: 0; left: 0; right: 0; overflow-y: auto; scrollbar-width: none; }
+  .navscroll::-webkit-scrollbar { display: none; }
+  .navbar-s { position: absolute; top: 44px; left: 0; right: 0; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; z-index: 2; background: rgba(242,242,247,.82); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); opacity: 0; transition: opacity .15s; pointer-events: none; }
+  .navbar-s.on { opacity: 1; }
+  .rows7 { margin: 0 14px 24px; background: #fff; border-radius: 12px; overflow: hidden; }
+  .rows7 div { display: flex; justify-content: space-between; padding: 12px 14px; font-size: 15px; border-bottom: .5px solid rgba(60,60,67,.29); }
+  .rows7 div:last-child { border-bottom: 0; }
+  .rows7 span { color: #6e6e73; font-variant-numeric: tabular-nums; }
+
+  /* 半屏弹窗 */
+  .dim { position: absolute; inset: 0; background: rgba(0,0,0,.28); opacity: 0; transition: opacity .3s; z-index: 5; pointer-events: none; }
+  .sheet7 { position: absolute; left: 0; right: 0; bottom: 0; height: 92%; background: #fff; border-radius: 30px 30px 0 0; z-index: 6; transform: translateY(105%); transition: transform .35s cubic-bezier(.2,.8,.2,1); box-shadow: 0 -4px 20px rgba(0,0,0,.12); }
+  .sheet7 .grab { width: 36px; height: 5px; border-radius: 3px; background: #c7c7cc; margin: 7px auto 4px; }
+  .sheet7 .bar7 { display: flex; justify-content: space-between; align-items: center; padding: 4px 14px 10px; font-size: 15px; }
+  .sheet7 .bar7 b { font-size: 16px; }
+  .sheet7 .bar7 .c { color: #0066cc; }
+  .sheet7 .bar7 .d { color: #fff; background: #0066cc; border-radius: 999px; padding: 4px 12px; font-weight: 600; }
+  .sheet7 .opt { margin: 0 14px; padding: 11px 0; border-bottom: .5px solid rgba(60,60,67,.29); font-size: 15px; display: flex; justify-content: space-between; }
+  .sheet7 .opt span { color: #0066cc; }
+  .st-medium .sheet7 { transform: translateY(50%); }
+  .st-large .sheet7 { transform: translateY(0); }
+  .st-medium .dim, .st-large .dim { opacity: 1; }
+  .map { position: absolute; inset: 0; background:
+    linear-gradient(90deg, rgba(255,255,255,.7) 2px, transparent 2px) 0 0 / 60px 60px,
+    linear-gradient(rgba(255,255,255,.7) 2px, transparent 2px) 0 0 / 60px 60px,
+    linear-gradient(160deg, #e7eedf, #dfe7f1); }
+
+  /* 提示框与操作表 */
+  .alert7 { width: 270px; max-width: 100%; margin: 8px auto; background: rgba(245,245,247,.98); border-radius: 22px; text-align: center; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,.18); font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; color: #000; }
+  .alert7 .tx { padding: 18px 16px 14px; }
+  .alert7 .tt { font-size: 16px; font-weight: 600; margin: 0 0 4px; }
+  .alert7 .mm { font-size: 13px; margin: 0; line-height: 1.45; }
+  .alert7 .bb { display: flex; gap: 8px; padding: 0 14px 14px; }
+  .alert7 .bb span { flex: 1; padding: 9px 0; border-radius: 999px; background: rgba(120,120,128,.14); font-size: 15px; font-weight: 600; color: #0066cc; }
+  .alert7 .bb span.def { background: #0066cc; color: #fff; }
+  .alert7 .bb span.red { color: #d70015; }
+  .stage7 { background: linear-gradient(160deg, #cfd5e3, #e9e3db); border-radius: 12px; padding: 22px 10px; }
+  .as7 { width: 280px; max-width: 100%; margin: 0 auto; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; }
+  .as7 .grp { background: rgba(250,250,252,.97); border-radius: 18px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,.15); }
+  .as7 .grp div { padding: 13px; text-align: center; font-size: 16px; color: #0066cc; border-bottom: .5px solid rgba(60,60,67,.2); }
+  .as7 .grp div:last-child { border-bottom: 0; }
+  .as7 .grp .hd { font-size: 13px; color: #6e6e73; padding: 11px; }
+  .as7 .grp .red { color: #d70015; }
+  .as7 .cancel { margin-top: 8px; font-weight: 600; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sheet7, .dim, .navbar-s { transition: none; }
+  }
+</style>
+</head>
+<body>
+<main class="page">
+
+  <nav class="crumb"><a href="../../index.html">← 课程目录</a></nav>
+
+  <header class="prose">
+    <p class="eyebrow">第 7 课 / 共 9 课</p>
+    <h1>iOS 页面结构与导航</h1>
+    <p class="lead">前几课讲的是一屏之内怎么摆。这一课往上走一层：一个 App 由很多屏组成，<b>屏和屏之间怎么走</b>。主线是苹果的《人机界面指南》（HIG），最后对比 Android 和网页的做法。</p>
+    <p class="meta">约 30 分钟 · 纯讲解</p>
+  </header>
+
+  <!-- 01 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">01</span>先分清两层：内容层和控件层</h2>
+      <p>从 iOS 26 开始，苹果的界面有一个明确的分层，HIG 材质一章是这么说的：<b>液态玻璃（Liquid Glass）为控件和导航元素构成一个独立的"功能层"</b>，比如标签栏、侧边栏，它浮在内容层上方，让功能元素和内容的层次一目了然。内容可以从它下面滚过、透出来。</p>
+      <p>这条分层决定了很多规矩：</p>
+      <ul>
+        <li><b>液态玻璃不要用在内容层</b>。内容层的背景等元素用标准材质（HIG 原话："Don't use Liquid Glass in the content layer."）。</li>
+        <li><b>自定义控件上的玻璃效果要少用</b>，只留给最重要的功能元素。系统组件会自动获得这个材质。</li>
+        <li><b>工具栏少加自定义背景和染色</b>。需要把工具栏和内容区分开时，用系统的"滚动边缘效果"（scroll edge effect），它不是装饰，只在内容从浮动控件下面滚过时才用。</li>
+      </ul>
+      <p>下面讲的标签栏、导航栏、工具栏，都属于浮在上面的控件层。</p>
+    </div>
+  </section>
+
+  <!-- 02 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">02</span>三种走法：切换、深入、临时打断</h2>
+      <p>一个 App 里，屏和屏之间的关系基本只有三种，各有一个专门的组件：</p>
+    </div>
+    <div class="spec-wrap">
+      <table class="spec" style="min-width:600px">
+        <thead><tr><th>关系</th><th>组件</th><th>例子</th><th>SwiftUI</th></tr></thead>
+        <tbody>
+          <tr><td><b>平级切换</b>：在几个大区之间跳</td><td>标签栏</td><td>"时钟"里的闹钟、秒表、计时器</td><td><code>TabView</code></td></tr>
+          <tr><td><b>一层层深入</b>：列表 → 详情 → 更细的详情</td><td>导航栈（顶部有返回按钮）</td><td>"设置" → 通用 → 关于本机</td><td><code>NavigationStack</code></td></tr>
+          <tr><td><b>临时打断</b>：做一件小事，做完回来</td><td>半屏弹窗、全屏弹窗、提示框</td><td>写新邮件、选择筛选条件</td><td><code>.sheet</code> · <code>.fullScreenCover</code> · <code>.alert</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="prose">
+      <p>判断一个界面的导航好不好，第一步就是看它有没有<b>用对组件</b>：该深入的用了弹窗，用户就找不到返回的路；该临时的做成了深入，用户做完小事还得一层层退回来。</p>
+    </div>
+  </section>
+
+  <!-- 03 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">03</span>标签栏：只管切换，不放操作</h2>
+      <p>HIG 对标签栏的定义是"在 App 的顶层大区之间导航"，并且切换时<b>保留每个区自己的浏览位置</b>（从"订单"切到"首页"再切回来，还停在刚才那张订单上）。几条规定：</p>
+      <ul>
+        <li><b>用来导航，不用来执行操作</b>。要对当前页面做操作，用工具栏。</li>
+        <li><b>始终可见</b>，否则用户会忘了自己在哪个区；唯一的例外是被临时的弹窗盖住。</li>
+        <li><b>标签越少越好找</b>。放不下时最后一个会变成"更多"，藏在里面的内容很难被发现，要尽量避免。</li>
+        <li><b>不要禁用或隐藏某个标签</b>，哪怕它暂时没内容；没内容就在页面里说明原因（第 6 课的空状态）。</li>
+        <li><b>每个标签都配文字</b>，尽量一个词；图标用 SF Symbols 的实心版本。</li>
+        <li><b>角标（红点数字）只留给重要信息</b>，用多了就没人看了。</li>
+      </ul>
+      <p>iOS 26 起，iPhone 的标签栏<b>浮在内容上方</b>，底下是液态玻璃；可以设置成往下滚动时收起（<code>.tabBarMinimizeBehavior</code>）；还可以在最右端放一个独立的<b>搜索标签</b>（<code>Tab(role: .search)</code>）。</p>
+    </div>
+    <div class="phones">
+      <div>
+        <div class="mini"><div class="scr">
+          <div class="sb"><span>9:41</span><span></span></div>
+          <p class="h-big">发现</p>
+          <div class="feed"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="tabbar"><div class="bar">
+            <span class="t on"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z" fill="currentColor"/></svg>首页</span>
+            <span class="t"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M15 9l-2 4-4 2 2-4z" fill="currentColor"/></svg></span>
+            <span class="t plus"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6v12M6 12h12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span>
+            <span class="t"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
+            <span class="t"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4.5 20.5c.9-3.8 3.8-5.8 7.5-5.8s6.6 2 7.5 5.8" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></span>
+          </div></div>
+        </div></div>
+        <p class="phone-cap"><span class="verdict no">和 HIG 不一致</span>：中间的"＋"是操作不是导航；只有一个标签有文字，其余靠猜；图标空心实心混用。</p>
+      </div>
+      <div>
+        <div class="mini"><div class="scr">
+          <div class="sb"><span>9:41</span><span></span></div>
+          <p class="h-big">首页</p>
+          <div class="feed"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="tabbar">
+            <div class="bar">
+              <span class="t on"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z" fill="currentColor"/></svg>首页</span>
+              <span class="t"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="currentColor"/><path d="M15.5 8.5l-2.3 4.7-4.7 2.3 2.3-4.7z" fill="#fff"/></svg>发现</span>
+              <span class="t"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z" fill="currentColor"/></svg>消息</span>
+              <span class="t"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4.2" fill="currentColor"/><path d="M4 21c.8-4.3 4-6.5 8-6.5s7.2 2.2 8 6.5z" fill="currentColor"/></svg>我的</span>
+            </div>
+            <span class="srch" aria-label="搜索"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15 15l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+          </div>
+        </div></div>
+        <p class="phone-cap"><span class="verdict ok">符合 HIG</span>：四个标签都是"去哪儿"，都有文字，都用实心图标；搜索单独放在最右端。"发布"这类操作放进页面的工具栏。</p>
+      </div>
+    </div>
+    <div class="prose" style="margin-top:24px">
+      <div class="callout">
+        <p><b>关于中间的"＋"</b>：国内不少 App 把"发布"做成标签栏中间的大按钮。这是很多产品的选择，但和 HIG"标签栏用来导航，不用来执行操作"的建议不一致。做 iOS App 时知道这一点：选它是在偏离平台惯例，要有足够的理由。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">04</span>导航栈：一层层往里走，随时能退回来</h2>
+      <p>在 iOS 里，导航栈顶部那条栏叫导航栏，HIG 现在把它归在"工具栏"一章里。几条要点：</p>
+      <ul>
+        <li><b>用标准的返回和关闭按钮</b>：用系统符号，<b>不要</b>写成"返回"、"关闭"文字。自己画的版本也要长得一样、表现一样。</li>
+        <li><b>标题简短</b>：一个词或短语，HIG 建议不超过 15 个字符，给其他控件留地方；不要拿 App 名字当标题。</li>
+        <li><b>大标题</b>：帮用户确认"我在哪"。默认往下滚动时变成小标题，滚回顶部再变大。下面这台手机可以滚动试试。</li>
+        <li><b>手势是快捷方式，不是替代品</b>：从屏幕左边缘右滑可以返回，但 HIG 强调返回按钮要一直保留。</li>
+        <li><b>关键操作用醒目样式</b>：比如"完成"、"提交"用 <code>.prominent</code>，只设一个，放在右侧；工具栏的按钮分组最多三组。</li>
+      </ul>
+    </div>
+    <div class="phones">
+      <div>
+        <div class="mini"><div class="scr">
+          <div class="sb"><span>9:41</span><span></span></div>
+          <div class="navbar-s" id="nav-s">订单</div>
+          <div class="navscroll" id="navscroll">
+            <p class="h-big" style="font-size:30px">订单</p>
+            <div class="rows7" id="rows7"></div>
+          </div>
+        </div></div>
+        <p class="phone-cap">在手机里往上滚：大标题滑走后，顶部出现小标题。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">05</span>模态：临时打断，做完就回来</h2>
+      <p>"模态"指的是：弹出一个专门的界面，挡住原来的页面，必须明确操作才能关掉。HIG 对它非常克制：</p>
+      <ul>
+        <li><b>只在有明确好处时才用</b>，比如帮用户专注、或者做一个会影响内容的选择。</li>
+        <li><b>任务要简单、短</b>。太复杂，用户会忘了自己是从哪儿进来的；不要在弹窗里再做一整套多层页面，"像 App 里套了个 App"。</li>
+        <li><b>一次只弹一个</b>。关掉一个半屏弹窗又冒出另一个，用户会迷路。</li>
+        <li><b>关闭前防丢</b>：如果关掉会丢失用户写的内容，先确认，比如弹出操作表提供"存储"选项。</li>
+        <li><b>标题说清这是在做什么</b>。</li>
+      </ul>
+      <p><b>半屏弹窗（sheet）</b>是 iPhone 上最常用的模态。它可以停在几个固定高度，HIG 叫<b>停靠点（detent）</b>：系统定义了"大"（完全展开）和"中"（大约一半）。几条规定：</p>
+      <ul>
+        <li>内容可以先在"中"高度展示最相关的部分，需要更多再拉到"大"，比如系统的分享面板。</li>
+        <li>可调高度的弹窗要显示顶部那根<b>小横条</b>（grabber），它提示可以拖动，也能让读屏用户调整高度。</li>
+        <li>支持<b>向下轻扫关闭</b>；有未保存的修改时，先用操作表确认。</li>
+        <li><b>按钮位置</b>：取消在左上，完成在右上。有"完成"就必须配"取消"或"返回"，只有"完成"等于告诉用户"不做完别想走"。</li>
+        <li>复杂、耗时的任务（编辑照片、多步骤流程）改用<b>全屏</b>模态。</li>
+      </ul>
+    </div>
+    <div class="demo" id="sheet-demo">
+      <div class="demo-controls" id="sheet-modes" role="group" aria-label="弹窗高度">
+        <button type="button" data-st="none" aria-pressed="true">收起</button>
+        <button type="button" data-st="medium" aria-pressed="false">中（约一半）</button>
+        <button type="button" data-st="large" aria-pressed="false">大（完全展开）</button>
+      </div>
+      <div class="mini" id="sheet-phone"><div class="scr">
+        <div class="map"></div>
+        <div class="sb"><span>9:41</span><span></span></div>
+        <div class="dim"></div>
+        <div class="sheet7" aria-label="筛选弹窗">
+          <div class="grab"></div>
+          <div class="bar7"><span class="c">取消</span><b>筛选</b><span class="d">完成</span></div>
+          <div class="opt">距离<span>3 公里内</span></div>
+          <div class="opt">评分<span>4.5 分以上</span></div>
+          <div class="opt">价格<span>不限</span></div>
+          <div class="opt">营业时间<span>现在营业</span></div>
+          <div class="opt">停车<span>不限</span></div>
+          <div class="opt">充电桩<span>不限</span></div>
+        </div>
+      </div></div>
+      <pre class="code" style="margin:20px auto 0;max-width:520px">.sheet(isPresented: $showFilter) {
+    FilterView()
+        .presentationDetents([.medium, .large])  // 中、大两档
+}</pre>
+    </div>
+  </section>
+
+  <!-- 06 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">06</span>提示框和操作表：最重的打断</h2>
+      <p><b>提示框（alert）</b>会打断用户手上的事，所以 HIG 的规定几乎都是"少用"：</p>
+      <ul>
+        <li><b>不要只为了告知信息就弹</b>。比如断网，"邮件"是在界面里显示一个状态提示，而不是弹窗。</li>
+        <li><b>常见、可撤销的操作不要弹</b>，哪怕是删除。删一封邮件不用确认，因为能撤销；不常见、又撤销不了的危险操作才需要。</li>
+        <li><b>不要一启动就弹</b>。</li>
+        <li><b>标题说清发生了什么</b>，"错误"或"错误 32934"这类标题等于没说。</li>
+        <li><b>按钮用动词</b>，一两个词，说清点了会怎样；除非纯告知，否则不要用"好"，因为用户分不清"好"是指"好，执行"还是"好，我知道了"。</li>
+        <li><b>位置</b>：最可能点的放右边（竖排时放最上面），取消放左边（竖排时放最下面）。</li>
+      </ul>
+      <p><b>操作表（action sheet）</b>用来给"用户主动发起的操作"提供选项。HIG 的例子：在"邮件"里取消正在写的邮件，弹出"删除草稿"和"存储草稿"。连同取消<b>最多四个按钮</b>；危险选项用红色，放在最上面；取消放在最下面。</p>
+    </div>
+    <div class="samples" style="--cols:2">
+      <div class="sample">
+        <div class="cap"><span>标题空洞，按钮含糊</span><span class="verdict no">"确定"是确定什么？</span></div>
+        <div class="stage7"><div class="alert7">
+          <div class="tx"><p class="tt">提示</p><p class="mm">确定要这样做吗？</p></div>
+          <div class="bb"><span>取消</span><span class="def">确定</span></div>
+        </div></div>
+      </div>
+      <div class="sample">
+        <div class="cap"><span>标题说清后果，按钮是动词</span><span class="verdict ok">不读正文也知道点了会怎样</span></div>
+        <div class="stage7"><div class="alert7">
+          <div class="tx"><p class="tt">停止下载？</p><p class="mm">已下载的 3 个文件会保留</p></div>
+          <div class="bb"><span>继续下载</span><span class="def">停止</span></div>
+        </div></div>
+      </div>
+    </div>
+    <div class="samples" style="--cols:2">
+      <div class="sample">
+        <div class="cap"><span>操作表：取消写了一半的邮件</span><span class="verdict ok">危险在上，取消在下</span></div>
+        <div class="stage7"><div class="as7">
+          <div class="grp"><div class="red">删除草稿</div><div>存储草稿</div></div>
+          <div class="grp cancel"><div>取消</div></div>
+        </div></div>
+      </div>
+      <div class="sample prose" style="font-size:15px">
+        <div class="cap"><span>一个细节</span></div>
+        <p style="margin:0 0 10px">HIG 说：红色的危险样式，用在<b>用户没有主动选择的</b>危险操作上。</p>
+        <p style="margin:0 0 10px">左边的"删除草稿"是红色，因为用户点的是"取消"，删除只是可能的后果之一。</p>
+        <p style="margin:0">反过来，用户主动点了"清空废纸篓"，确认框里的"清空废纸篓"按钮就<b>不用</b>红色，因为它执行的正是用户的本意。</p>
+      </div>
+    </div>
+    <p class="cite">SwiftUI：提示框用 <code>.alert</code>，操作表用 <code>.confirmationDialog</code>（自带取消按钮）。</p>
+  </section>
+
+  <!-- 07 -->
+  <section class="prose">
+    <h2><span class="num">07</span>搜索放在哪</h2>
+    <p>HIG 给 iOS 的搜索入口列了三个位置：</p>
+    <ul>
+      <li><b>标签栏里的搜索标签</b>：在各个区之间切换时，搜索始终可用。两种样式：标准标签会有一个搜索首页，展示建议、鼓励探索；按钮样式点一下就直接弹出键盘，搜完回到刚才的标签。</li>
+      <li><b>工具栏里</b>：有空间就放在底部，伸手就够得着（"设置"、"邮件"、"备忘录"）；底部内容很重要时放在顶部（"钱包"底部是卡片堆）。</li>
+      <li><b>和内容并排</b>：只搜当前这一块内容时，把搜索框放在内容旁边，表明它只管这里。</li>
+    </ul>
+  </section>
+
+  <!-- 08 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">08</span>手势：给快捷方式，不替代按钮</h2>
+      <p>HIG 列出的标准手势，每个都有用户默认的含义：</p>
+    </div>
+    <div class="spec-wrap">
+      <table class="spec">
+        <thead><tr><th>手势</th><th>常见含义</th></tr></thead>
+        <tbody>
+          <tr><td>轻点</td><td>激活控件、选中项目</td></tr>
+          <tr><td>轻扫</td><td>露出操作和控件、关闭视图、滚动</td></tr>
+          <tr><td>拖动</td><td>移动界面元素</td></tr>
+          <tr><td>长按</td><td>显示更多控件或功能</td></tr>
+          <tr><td>双击</td><td>放大；已放大时缩小</td></tr>
+          <tr><td>捏合</td><td>缩放视图、放大内容</td></tr>
+          <tr><td>旋转</td><td>旋转选中的项目</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="prose">
+      <ul>
+        <li><b>不要给熟悉的手势安排意外的动作</b>，比如让轻扫做一件你 App 独有的事。</li>
+        <li><b>快捷手势是补充</b>：边缘右滑返回很方便，但返回按钮要保留；用户需要"简单、熟悉的方式，哪怕多点一两下"。</li>
+        <li><b>提供不止一种操作方式</b>：有人用语音、键盘或切换控制来操作手机，不能假设每个人都能做某个手势。</li>
+        <li><b>不和调出系统界面的手势冲突</b>：HIG 举的是手表、Vision Pro 上的例子；在 iPhone 上，从屏幕底部上滑回主屏幕就属于这类系统手势，App 的自定义手势不要和它抢。</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 09 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">09</span>和 Android、网页的差异</h2>
+      <p>同一个产品做三端时，信息结构可以相同，但"外壳"要跟各平台的习惯走：</p>
+    </div>
+    <div class="spec-wrap">
+      <table class="spec" style="min-width:600px">
+        <thead><tr><th style="white-space:nowrap"></th><th>iOS</th><th>Android（Material）</th><th>网页</th></tr></thead>
+        <tbody>
+          <tr><td style="white-space:nowrap"><b>顶层切换</b></td><td>底部标签栏；iOS 26 起浮在内容上方</td><td>底部导航栏，3～5 个目的地；大屏换成侧边的导航轨（navigation rail）</td><td>顶部导航栏；手机上常折叠成菜单按钮</td></tr>
+          <tr><td style="white-space:nowrap"><b>返回</b></td><td>左上角返回按钮 + 左边缘右滑</td><td>系统级返回（手势或按钮），每一页都要正确响应；Android 15 起支持"预测性返回"的 App，返回时会先预览上一页</td><td>浏览器的后退；网址要能对应页面状态，否则后退会跳错</td></tr>
+          <tr><td style="white-space:nowrap"><b>临时任务</b></td><td>半屏弹窗（停靠点）、全屏弹窗</td><td>底部面板（bottom sheet）、对话框</td><td>对话框、抽屉</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="prose">
+      <p>网页上最常见的争议是"要不要把导航藏进菜单（汉堡按钮）"。NN/g 做过实测：手机上，导航完全藏进菜单的网站，用户在任务中用到导航的比例是 44%～56%，而导航部分露出来的网站是 89%。他们的建议是：<b>顶层选项只有四五个时，直接露出来</b>；必须藏时，菜单按钮要醒目、看得出能点，最好带文字。</p>
+    </div>
+  </section>
+
+  <!-- 10 -->
+  <section class="prose">
+    <h2><span class="num">10</span>本课要点</h2>
+    <ul class="checklist">
+      <li>iOS 26 起分两层：液态玻璃的控件层浮在内容层上方；玻璃不用在内容层，自定义控件少用。</li>
+      <li>屏与屏只有三种关系：平级切换（标签栏）、一层层深入（导航栈）、临时打断（弹窗、提示框）。先看组件用对了没有。</li>
+      <li>标签栏只管导航、始终可见、每个都有文字、不禁用不隐藏；操作放工具栏。</li>
+      <li>导航栏用系统返回按钮，标题简短（≤ 15 字符），大标题滚动时收起；手势只是返回按钮的快捷方式。</li>
+      <li>模态少用、短小、一次一个；半屏弹窗有"中"和"大"两个停靠点、显示小横条、可下滑关闭；取消在左、完成在右。</li>
+      <li>提示框不只为告知、不为可撤销操作、不在启动时弹；标题说清发生了什么，按钮用动词。操作表最多 4 个按钮，危险在上、取消在下。</li>
+      <li>三端信息结构可以一样，外壳跟平台习惯走；网页顶层选项少就别藏进菜单。</li>
+    </ul>
+  </section>
+
+  <div class="next">
+    <div>
+      <h3>下一课：动效与反馈</h3>
+      <p>动画该多长、用什么曲线；弹簧动画；"减弱动态效果"设置；触感反馈；多慢算慢。</p>
+    </div>
+    <a class="btn-primary" href="../08-motion/index.html">继续 →</a>
+  </div>
+
+  <footer class="refs">
+    <h2>参考资料</h2>
+    <ul>
+      <li><a href="https://developer.apple.com/design/human-interface-guidelines/materials" target="_blank" rel="noopener">Apple HIG · Materials</a>（液态玻璃） · <a href="https://developer.apple.com/design/human-interface-guidelines/scroll-views" target="_blank" rel="noopener">Scroll views</a>（滚动边缘效果）</li>
+      <li><a href="https://developer.apple.com/design/human-interface-guidelines/tab-bars" target="_blank" rel="noopener">Apple HIG · Tab bars</a> · <a href="https://developer.apple.com/design/human-interface-guidelines/toolbars" target="_blank" rel="noopener">Toolbars</a> · <a href="https://developer.apple.com/design/human-interface-guidelines/search-fields" target="_blank" rel="noopener">Search fields</a></li>
+      <li><a href="https://developer.apple.com/design/human-interface-guidelines/modality" target="_blank" rel="noopener">Apple HIG · Modality</a> · <a href="https://developer.apple.com/design/human-interface-guidelines/sheets" target="_blank" rel="noopener">Sheets</a> · <a href="https://developer.apple.com/design/human-interface-guidelines/alerts" target="_blank" rel="noopener">Alerts</a> · <a href="https://developer.apple.com/design/human-interface-guidelines/action-sheets" target="_blank" rel="noopener">Action sheets</a></li>
+      <li><a href="https://developer.apple.com/design/human-interface-guidelines/gestures" target="_blank" rel="noopener">Apple HIG · Gestures</a></li>
+      <li><a href="https://developer.android.com/design/ui/mobile/guides/layout-and-content/layout-and-nav-patterns" target="_blank" rel="noopener">Android · Layout and navigation patterns</a> · <a href="https://developer.android.com/guide/navigation/custom-back/predictive-back-gesture" target="_blank" rel="noopener">Predictive back</a></li>
+      <li><a href="https://www.nngroup.com/articles/find-navigation-mobile-even-hamburger/" target="_blank" rel="noopener">NN/g · Hamburger Menus and Hidden Navigation Hurt UX Metrics（移动端）</a></li>
+    </ul>
+  </footer>
+
+</main>
+<script src="../../assets/lesson.js"></script>
+<script>
+  // 04 大标题：内容往上滚过大标题后，顶部显示小标题
+  (function () {
+    const rows = document.getElementById("rows7");
+    const data = [["#20261107-01", "¥ 58.00"], ["#20261106-03", "¥ 1,299.00"], ["#20261105-02", "¥ 8.50"], ["#20261103-01", "¥ 36.00"], ["#20261101-04", "¥ 219.00"], ["#20261030-02", "¥ 12.90"], ["#20261028-01", "¥ 89.00"], ["#20261025-03", "¥ 4.50"], ["#20261022-01", "¥ 640.00"], ["#20261020-02", "¥ 27.80"], ["#20261018-01", "¥ 15.00"], ["#20261015-02", "¥ 368.00"], ["#20261012-01", "¥ 9.90"], ["#20261010-03", "¥ 72.00"]];
+    rows.innerHTML = data.map(([a, b]) => `<div>${a}<span>${b}</span></div>`).join("");
+    const box = document.getElementById("navscroll"), small = document.getElementById("nav-s");
+    box.addEventListener("scroll", () => small.classList.toggle("on", box.scrollTop > 34));
+  })();
+
+  // 05 半屏弹窗的三种高度
+  (function () {
+    const phone = document.getElementById("sheet-phone");
+    const btns = document.querySelectorAll("#sheet-modes button");
+    btns.forEach((b) => b.addEventListener("click", () => {
+      phone.classList.remove("st-medium", "st-large");
+      if (b.dataset.st !== "none") phone.classList.add("st-" + b.dataset.st);
+      btns.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    }));
+  })();
+</script>
+</body>
+</html>
