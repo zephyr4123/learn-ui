@@ -330,6 +330,8 @@ kbd, code { font-family: var(--mono); font-size: 0.88em; background: var(--surfa
 
 /* ---------- 后续各课通用：规格表、并排样例、来源标签 ---------- */
 .spec-wrap { overflow-x: auto; margin-top: 20px; }
+/* 表格（或表格下的出处）后面直接接正文时，留出和段落间距一致的空隙 */
+.spec-wrap + .prose, .spec-wrap + .cite + .prose { margin-top: 20px; }
 .spec { width: 100%; border-collapse: collapse; font-size: 14px; line-height: 1.5; }
 .spec th, .spec td { padding: 9px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: baseline; }
 .spec th { color: var(--text-2); font-weight: 600; font-size: 13px; white-space: nowrap; }

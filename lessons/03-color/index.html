@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 3 课 · 颜色</title>
+<link rel="stylesheet" href="../../assets/lesson.css">
+<style>
+  .tool-box { margin-top: 24px; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 24px; }
+  .row2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; align-items: start; }
+  .slider { margin-bottom: 14px; }
+  .slider label { display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .slider label span { font-weight: 400; color: var(--text-2); font-variant-numeric: tabular-nums; }
+  .slider input { width: 100%; accent-color: var(--accent); }
+  .big-swatch { height: 120px; border-radius: 14px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); display: flex; align-items: flex-end; padding: 12px 14px; font: 600 15px/1.4 var(--mono); }
+  .readouts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+  .readout { border-radius: 12px; padding: 12px 14px; font-size: 15px; font-weight: 600; }
+  .readout small { display: block; font-size: 12px; font-weight: 500; margin-top: 2px; opacity: .8; }
+
+  /* 三类颜色 */
+  .roles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 24px; }
+  .role { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; }
+  .role .chips { display: flex; gap: 6px; margin-bottom: 12px; }
+  .role .chips i { flex: 1; height: 40px; border-radius: 8px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
+  .role h3 { margin-bottom: 4px; }
+  .role p { font-size: 14px; color: var(--text-2); margin: 0; line-height: 1.7; }
+
+  /* 系统色板 */
+  .modes { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+  .modes button { font: inherit; font-size: 14px; padding: 7px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--text); cursor: pointer; }
+  .modes button[aria-pressed="true"] { background: var(--text); color: var(--surface); border-color: var(--text); }
+  .palette { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; padding: 16px; border-radius: 16px; transition: background-color .2s; }
+  .sw { border-radius: 12px; overflow: hidden; font-size: 12px; line-height: 1.45; }
+  .sw i { display: block; height: 52px; }
+  .sw div { padding: 6px 8px 8px; }
+  .sw b { font-size: 13px; }
+  .sw .cr { font-variant-numeric: tabular-nums; }
+
+  /* 文字层级 */
+  .levels { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 20px; }
+  .lv { border-radius: 14px; padding: 18px; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; font-size: 16px; line-height: 1.9; border: 1px solid var(--line); }
+
+  /* 对比度计算器 */
+  .cc-pick { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 14px; }
+  .cc-pick label { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
+  .cc-pick input[type=color] { width: 44px; height: 32px; border: 1px solid var(--line); border-radius: 8px; padding: 2px; background: var(--surface); }
+  .cc-sample { border-radius: 14px; padding: 20px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; }
+  .cc-sample .s1 { font-size: 15px; margin: 0 0 6px; }
+  .cc-sample .s2 { font-size: 24px; margin: 0; }
+  .cc-ratio { font-size: 40px; font-weight: 700; font-variant-numeric: tabular-nums; margin: 6px 0 10px; }
+  .badges { display: flex; flex-wrap: wrap; gap: 8px; }
+  .badge { font-size: 13px; font-weight: 600; padding: 4px 10px; border-radius: 8px; }
+  .badge.pass { background: var(--good-soft); color: var(--good); }
+  .badge.fail { background: var(--bad-soft); color: var(--bad); }
+  .presets { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .presets button { font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface-2); color: var(--text); cursor: pointer; }
+
+  /* 不要只靠颜色 */
+  .gray-test.is-gray .paper { filter: grayscale(1); }
+  .status-list { list-style: none; padding: 0; margin: 0; font-size: 15px; }
+  .status-list li { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 0.5px solid rgba(60,60,67,.2); }
+  .status-list li:last-child { border-bottom: 0; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+  .st-ic { width: 18px; height: 18px; flex: none; }
+  .field { border-radius: 10px; padding: 10px 12px; font-size: 15px; margin-top: 6px; }
+  .field-label { font-size: 13px; color: #6e6e73; }
+  .err-msg { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #e9152d; margin-top: 6px; }
+
+  /* 暗色模式 */
+  .modes-cmp { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px; }
+  .mock { border-radius: 18px; padding: 16px; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; }
+  .mock .cap2 { font-size: 13px; margin: 0 4px 8px; }
+  .mock .card { border-radius: 14px; padding: 14px 16px; }
+  .mock .t1 { font-size: 17px; font-weight: 600; }
+  .mock .t2 { font-size: 15px; margin-top: 2px; }
+  .mock .sheet { margin-top: 12px; border-radius: 14px; padding: 12px 16px; font-size: 15px; }
+  .mock .btn { display: inline-block; margin-top: 12px; padding: 8px 16px; border-radius: 999px; font-size: 15px; font-weight: 600; }
+
+  .checklist { list-style: none; padding: 0; margin: 20px 0 0; }
+  .checklist li { position: relative; padding: 12px 0 12px 26px; border-bottom: 1px solid var(--line); }
+  .checklist li:last-child { border-bottom: 0; }
+  .checklist li::before { content: ""; position: absolute; left: 6px; top: 23px; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+
+  @media (max-width: 860px) {
+    .row2, .roles, .levels, .modes-cmp { grid-template-columns: minmax(0, 1fr); }
+    .palette { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+</style>
+</head>
+<body>
+<main class="page">
+
+  <nav class="crumb"><a href="../../index.html">← 课程目录</a></nav>
+
+  <header class="prose">
+    <p class="eyebrow">第 3 课 / 共 9 课</p>
+    <h1>颜色：用途、层级与对比度</h1>
+    <p class="lead">颜色是最容易用乱的零件。这一课讲清三件事：颜色按用途分几类；同一类里怎么分层；怎么用"对比度"这把尺子量看不看得清。</p>
+    <p class="meta">约 25 分钟 · 纯讲解</p>
+  </header>
+
+  <!-- 01 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">01</span>先学会描述一个颜色</h2>
+      <p>屏幕上每个点都由红、绿、蓝三种光混出来，每种光的强度从 0 到 255。<code>#0066CC</code> 这种写法就是把三个数写成十六进制：红 <code>00</code>、绿 <code>66</code>、蓝 <code>CC</code>（即 0、102、204）。</p>
+      <p>但"红绿蓝各多少"不符合人的直觉。调颜色时更好用的是 <b>HSL</b>：<b>色相</b>（什么颜色，0～360°的色环）、<b>饱和度</b>（多鲜艳）、<b>明度</b>（多亮）。比如"同一个蓝，调深一点"，就是只改明度。</p>
+      <p>拖动下面的滑块试试。右边两个数字是这个颜色作为文字放在白底、黑底上的<b>对比度</b>，第 05 节会细讲。这里先留意一个反直觉的现象：把明度固定在 50%，只拖色相，黄色（60°）在白底上只有 1.07:1，蓝色（240°）却有 8.59:1。<b>HSL 的"明度"只是数学上的值，不等于人眼感到的亮度</b>，所以一个颜色看不看得清，不能凭 HSL 数值猜，要算对比度。</p>
+    </div>
+    <div class="tool-box">
+      <div class="row2">
+        <div>
+          <div class="slider"><label for="h">色相 H <span id="hv"></span></label><input type="range" id="h" min="0" max="360" value="212"></div>
+          <div class="slider"><label for="s">饱和度 S <span id="sv"></span></label><input type="range" id="s" min="0" max="100" value="100"></div>
+          <div class="slider"><label for="l">明度 L <span id="lv"></span></label><input type="range" id="l" min="0" max="100" value="40"></div>
+        </div>
+        <div>
+          <div class="big-swatch" id="hsl-swatch"></div>
+          <div class="readouts">
+            <div class="readout" id="on-white"></div>
+            <div class="readout" id="on-black"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">02</span>颜色按用途分三类</h2>
+      <p>界面里的每个颜色，都应该能回答"它是干什么用的"。按用途，基本只有三类：</p>
+    </div>
+    <div class="roles">
+      <div class="role">
+        <div class="chips"><i style="background:#f2f2f7"></i><i style="background:#ffffff"></i><i style="background:#c7c7cc"></i><i style="background:#6e6e73"></i><i style="background:#000000"></i></div>
+        <h3>中性色</h3>
+        <p>黑、白、灰。背景、正文、分割线都用它，占界面绝大部分面积。好看的界面，大部分其实是灰的。</p>
+      </div>
+      <div class="role">
+        <div class="chips"><i style="background:#0066cc"></i></div>
+        <h3>强调色</h3>
+        <p>通常就是品牌色，只用在<b>可以点</b>的地方：按钮、链接、选中状态。一般只有一个。</p>
+      </div>
+      <div class="role">
+        <div class="chips"><i style="background:#ff383c"></i><i style="background:#ff8d28"></i><i style="background:#34c759"></i></div>
+        <h3>语义色</h3>
+        <p>颜色本身带含义：红色表示错误或危险，橙黄表示警告，绿色表示成功。只在需要表达这些含义时出现。</p>
+      </div>
+    </div>
+    <div class="prose" style="margin-top:24px">
+      <p>苹果 HIG 的第一条颜色原则就是：<b>不要用同一个颜色表达不同的意思</b>。HIG 举的例子是：如果你用品牌色表示"这个无边框按钮可以点"，那就别再用同样或相近的颜色去装饰不能点的文字，否则用户分不清哪些能点。</p>
+      <p>还有一点值得中国开发者注意，HIG 专门举过这个例子：<b>颜色的含义因文化而异</b>。苹果自己的"股市"App，英文版用绿色表示上涨，中文版用红色表示上涨。所以"红色 = 坏"并不是放之四海皆准，要看用户所在的环境。</p>
+      <p>到了 iOS 26 的 Liquid Glass（液态玻璃）界面，"强调色要少"写得更具体了。HIG 要求给玻璃材质上色要克制：主操作的强调色加在<b>按钮背景</b>上，而不是加在图标或文字上；<b>不要给多个控件的背景都上色</b>。系统自带的"完成"按钮就是这么做的：一排工具栏按钮里，只有它是蓝色的。</p>
+      <div class="callout">
+        <p><b>常听到的"60-30-10 法则"</b>：主色占 60%、辅助色 30%、强调色 10%。它据说来自室内设计，但没人能给出确切出处，是个<span class="tag exp">经验法则</span>。真正有用的是背后的道理：<b>强调色要少</b>，到处都是就没人注意了，这和第 5 课讲的"先弱化再强调"是一回事。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">03</span>按用途命名，而不是按长相命名</h2>
+      <p>写代码的人都知道，变量要按含义命名，不要按值命名。颜色也一样：叫它"次要文字色"，而不是"60% 的灰"。苹果的系统颜色就是这么设计的，HIG 把它们叫做<b>动态系统颜色</b>，"按用途而不是按外观来定义"：</p>
+    </div>
+    <div class="spec-wrap">
+      <table class="spec">
+        <thead><tr><th>前景（文字、线条）</th><th>用途</th><th>背景</th><th>用途</th></tr></thead>
+        <tbody>
+          <tr><td><code>label</code></td><td>主要内容的文字</td><td><code>systemBackground</code></td><td>整个页面的底色</td></tr>
+          <tr><td><code>secondaryLabel</code></td><td>次要内容的文字</td><td><code>secondarySystemBackground</code></td><td>页面里的分组</td></tr>
+          <tr><td><code>tertiaryLabel</code></td><td>第三级文字</td><td><code>tertiarySystemBackground</code></td><td>分组里的再分组</td></tr>
+          <tr><td><code>quaternaryLabel</code></td><td>第四级文字</td><td><code>systemGroupedBackground</code> 等</td><td>分组列表用的一套背景</td></tr>
+          <tr><td><code>placeholderText</code></td><td>输入框占位文字</td><td colspan="2" rowspan="3" style="color:var(--text-2)">好处是：深色模式、"提高对比度"设置打开时，这些颜色会自动换成对应的版本，你一行代码都不用改。</td></tr>
+          <tr><td><code>separator</code></td><td>分割线</td></tr>
+          <tr><td><code>link</code></td><td>链接文字</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="cite">出处：Apple HIG · Color（Platform considerations · iOS, iPadOS）。</p>
+    <div class="prose">
+      <p>HIG 对这套颜色有两条要求：</p>
+      <ul>
+        <li><b>不要改变它们的含义</b>：比如不要拿分割线颜色当文字色，不要拿次要文字色当背景色。</li>
+        <li><b>不要在代码里写死系统颜色的数值</b>：文档里列出的色值"只供设计时参考，实际数值可能随版本变化"，要用 <code>Color</code> 这类 API 取用。</li>
+      </ul>
+      <div class="callout">
+        <p><b>第二条刚发生过</b>：HIG 的更新记录写着，2025 年 6 月"更新了系统颜色的数值"。iOS 的系统蓝在浅色模式下现在是 RGB(0, 136, 255)，也就是 <code>#0088FF</code>，不再是很多人背过的 <code>#007AFF</code>。代码里写死旧值的 App，颜色就和系统对不上了。</p>
+      </div>
+      <p>Material 3 的思路一样，叫<b>颜色角色</b>（color roles）：Primary、Surface、Error……而且每种底色都配一个"on 颜色"，专门用来放在它上面，比如 Primary 底上的文字用 OnPrimary。底色和文字色总是成对出现，对比度就不容易出问题。</p>
+      <p><b>对写代码的意义</b>：SwiftUI 里用 <code>.foregroundStyle(.secondary)</code>、<code>Color(.systemBackground)</code> 这类语义写法；自定义颜色在 Xcode 的颜色集（Color Set）里同时提供浅色、深色版本。HIG 还建议给每个版本再配一个"提高对比度"的变体。</p>
+    </div>
+  </section>
+
+  <!-- 04 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">04</span>苹果的系统色板，以及一个意外发现</h2>
+      <p>下面是 HIG 里 12 种系统颜色的官方取值，分四种模式。每块下面的数字，是这个颜色<b>作为文字</b>放在该模式背景上（浅色用白底，深色用黑底）的对比度：</p>
+    </div>
+    <div class="tool-box">
+      <div class="modes" role="group" aria-label="显示模式">
+        <button type="button" data-mode="0" aria-pressed="true">浅色</button>
+        <button type="button" data-mode="1" aria-pressed="false">深色</button>
+        <button type="button" data-mode="2" aria-pressed="false">浅色 · 提高对比度</button>
+        <button type="button" data-mode="3" aria-pressed="false">深色 · 提高对比度</button>
+      </div>
+      <div class="palette" id="palette"></div>
+    </div>
+    <div class="prose">
+      <div class="callout">
+        <p><b>发现了什么</b>：默认的浅色模式下，12 种颜色作为文字放在白底上，只有靛蓝达到小字要求的 4.5（为什么是 4.5，第 05 节细讲）。绿、橙、黄、薄荷、蓝绿、青只有 1.5～2.3，连系统蓝也只有 3.52。切到"浅色 · 提高对比度"，12 种全部变深、全部达标，而且大多落在 4.5 刚出头。从数字看，默认色板更看重鲜艳，达标的版本放在了"提高对比度"这个辅助功能设置里。</p>
+        <p>所以<b>用系统颜色当小字的颜色，或者在它上面放白字时，要自己检查对比度</b>。HIG 自己也说："Avoid using colors that make it hard to perceive content in your app."</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">05</span>对比度：量"看不看得清"的尺子</h2>
+      <p>"这个灰是不是太浅了"，以前只能凭感觉。<b>对比度</b>把它变成了一个数：用两个颜色的"相对亮度"相除，结果从 1:1（完全一样）到 21:1（纯黑配纯白）。这个公式来自无障碍标准 WCAG，是目前少有的、有明确数字的硬标准：</p>
+    </div>
+    <div class="spec-wrap">
+      <table class="spec">
+        <thead><tr><th>对象</th><th>最低对比度</th><th>级别</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr class="hl"><td>普通文字</td><td class="num"><b>4.5 : 1</b></td><td>AA（1.4.3）</td><td>绝大多数界面文字</td></tr>
+          <tr><td>大字</td><td class="num">3 : 1</td><td>AA（1.4.3）</td><td>至少 18pt（约 24px），或 14pt 粗体（约 18.5px）</td></tr>
+          <tr><td>图标、输入框边框、焦点框</td><td class="num">3 : 1</td><td>AA（1.4.11）</td><td>理解界面必需的图形，和相邻颜色比</td></tr>
+          <tr><td>增强级文字</td><td class="num">7 : 1</td><td>AAA（1.4.6）</td><td>更高要求</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="prose">
+      <p>不能点的（禁用状态的）控件、纯装饰、Logo 不受限制。苹果的说法和 WCAG 一致：HIG 的暗色模式一章写着，"对比度至少不低于 4.5:1；自定义的前景和背景色，争取做到 7:1，尤其是小字"。</p>
+      <p>用下面的计算器试试，或者直接点几个真实例子：</p>
+    </div>
+    <div class="tool-box">
+      <div class="row2">
+        <div>
+          <div class="cc-pick">
+            <label>文字色 <input type="color" id="cc-fg" value="#ffffff"></label>
+            <label>背景色 <input type="color" id="cc-bg" value="#0088ff"></label>
+          </div>
+          <div class="cc-sample" id="cc-sample"><p class="s1">普通文字：确认收货（15px）</p><p class="s2">大字：本月结余</p></div>
+          <div class="presets" id="presets">
+            <button type="button" data-fg="#ffffff" data-bg="#0088ff">新系统蓝上的白字</button>
+            <button type="button" data-fg="#ffffff" data-bg="#1e6ef4">提高对比度的蓝上的白字</button>
+            <button type="button" data-fg="#ffffff" data-bg="#34c759">系统绿上的白字</button>
+            <button type="button" data-fg="#8e8e93" data-bg="#ffffff">系统灰文字在白底</button>
+            <button type="button" data-fg="#6e6e73" data-bg="#ffffff">#6E6E73 在白底</button>
+            <button type="button" data-fg="#ffffff" data-bg="#0066cc">#0066CC 上的白字</button>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:14px;color:var(--text-2)">对比度</div>
+          <div class="cc-ratio" id="cc-ratio"></div>
+          <div class="badges" id="cc-badges"></div>
+          <p class="cite" style="margin-top:14px">计算方法：WCAG 2.x 相对亮度公式。几个预设颜色取自 HIG 色板；"#6E6E73"和"#0066CC"是这门课示例里用的取值。</p>
+        </div>
+      </div>
+    </div>
+    <div class="prose">
+      <div class="callout">
+        <p><b>关于标准本身</b>：下一代的 WCAG 3.0 还是草案，草案里写着"对比度算法尚未确定"。网上常说的新算法 APCA，2023 年已经从草案里移除，以后会不会回来也没有定论。现在通行的仍是 WCAG 2.x 的这套公式和数字。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 06 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">06</span>灰色要分几级</h2>
+      <p>中性色里最常用的是文字灰。第 5 课讲层级时说过"把次要的调灰"，但灰也要成套、分级，而不是每处随手挑一个：</p>
+      <ul>
+        <li><b>iOS</b>：label、secondaryLabel、tertiaryLabel、quaternaryLabel 四级。</li>
+        <li><b>Ant Design</b>：一级文本 88% 不透明度的黑，二级文本 65%，禁用文本 25%。</li>
+      </ul>
+      <p>这两套都是<b>用"半透明的黑"来做灰</b>，而不是固定的灰色值。好处是放在浅灰的底上，它也会相应变深一点，层级关系保持不变：</p>
+    </div>
+    <div class="levels">
+      <div class="lv" style="background:#ffffff">
+        <div style="color:rgba(0,0,0,.88)">一级文字（88%）：标题和正文</div>
+        <div style="color:rgba(0,0,0,.65)">二级文字（65%）：说明、次要信息</div>
+        <div style="color:rgba(0,0,0,.25)">禁用文字（25%）：不能操作的选项</div>
+      </div>
+      <div class="lv" style="background:#e9eaee">
+        <div style="color:rgba(0,0,0,.88)">一级文字（88%）：标题和正文</div>
+        <div style="color:rgba(0,0,0,.65)">二级文字（65%）：说明、次要信息</div>
+        <div style="color:rgba(0,0,0,.25)">禁用文字（25%）：不能操作的选项</div>
+      </div>
+    </div>
+    <div class="prose" style="margin-top:20px">
+      <p>注意：分级要同时满足对比度。Ant Design 的文档说，它让正文、标题和背景保持在 7:1 以上（AAA 级）；上面的二级文字在白底上也有约 7:1；禁用文字只有约 1.8:1，但禁用状态本来就不受 4.5 的限制（第 05 节表格下方说过）。至于 iOS 的 secondaryLabel，常被引用的数值是 <code>rgba(60, 60, 67, 0.6)</code>，在白底上约 3.44:1，不到 4.5。不过这个数值来自 iOS 13 时期的资料，苹果没有公开当前的精确取值。</p>
+    </div>
+  </section>
+
+  <!-- 07 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">07</span>不要只靠颜色传递信息</h2>
+      <p>一篇 2012 年的同行评审综述统计：欧洲裔男性约 8%、女性约 0.4% 有红绿色觉缺陷；中国和日本男性约 4%～6.5%。也就是说，一个十万男性用户的 App，可能有几千人分不清你的红色和绿色。</p>
+      <p>WCAG 1.4.1 和 HIG 都要求：<b>颜色不能是传递信息的唯一方式</b>，要同时配上文字、图标或形状。点下面的"去色测试"，把颜色全部去掉，看看哪一边还能看懂：</p>
+    </div>
+    <div class="tool-box gray-test" id="gray-test">
+      <div class="modes"><button type="button" id="gray-btn" aria-pressed="false">去色测试</button></div>
+      <div class="samples" style="--cols:2;margin-top:0">
+        <div class="sample">
+          <div class="cap"><span>只靠颜色</span><span class="verdict no">去色后分不清</span></div>
+          <div class="paper">
+            <ul class="status-list">
+              <li><i class="dot" style="background:#34c759"></i>订单 #0421</li>
+              <li><i class="dot" style="background:#ff8d28"></i>订单 #0418</li>
+              <li><i class="dot" style="background:#ff383c"></i>订单 #0402</li>
+            </ul>
+            <div class="field-label" style="margin-top:12px">手机号</div>
+            <div class="field" style="border:1.5px solid #ff383c">138 0000 000</div>
+          </div>
+        </div>
+        <div class="sample">
+          <div class="cap"><span>颜色 + 图标 + 文字</span><span class="verdict ok">去色后照样看懂</span></div>
+          <div class="paper">
+            <ul class="status-list">
+              <li><svg class="st-ic" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="#008932"/><path d="M6 10.2l2.6 2.6L14 7.4" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>订单 #0421 · 已完成</li>
+              <li><svg class="st-ic" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="#c55300"/><path d="M10 5.5v5l3 2" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></svg>订单 #0418 · 处理中</li>
+              <li><svg class="st-ic" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="#e9152d"/><path d="M7 7l6 6M13 7l-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>订单 #0402 · 已取消</li>
+            </ul>
+            <div class="field-label" style="margin-top:12px">手机号</div>
+            <div class="field" style="border:1.5px solid #e9152d">138 0000 000</div>
+            <div class="err-msg"><svg width="14" height="14" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="#e9152d"/><path d="M10 5.5v6M10 14v.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>手机号少了一位</div>
+          </div>
+        </div>
+      </div>
+      <p class="cite">"去色测试"只是把颜色变成灰度，不等于色盲模拟，但它是更严格的检查：去掉颜色还能看懂，色盲用户一定也能看懂。右边的图标颜色用的是 HIG 里"提高对比度"版本的绿、橙、红，白色符号在上面更清楚。</p>
+    </div>
+  </section>
+
+  <!-- 08 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">08</span>暗色模式</h2>
+      <p>暗色模式不是把颜色反过来。HIG 的原话："这些颜色不一定是浅色版本的反色：很多颜色反转了，有些没有。"它的基本规则是<b>背景变暗、前景变亮</b>，几条要点：</p>
+      <ul>
+        <li><b>两层背景</b>：iOS 暗色模式有"基础"和"抬升"两套背景色。基础层更暗（接近纯黑），让后面的界面退后；弹出的面板、半屏弹窗用抬升层，稍亮一些，看起来浮在前面。</li>
+        <li><b>两种模式都要达标</b>：对比度在深色下同样要满足，自定义颜色必须提供浅色、深色两个版本。</li>
+        <li><b>白底图片要压暗一点</b>：带白色背景的图片放在暗色界面里会显得发光，HIG 建议稍微压暗。</li>
+        <li><b>不要在 App 里单独做"深色/浅色"开关</b>：用户已经在系统里选过了，HIG 认为 App 自己的开关只会添麻烦，还可能让人以为 App 坏了。</li>
+      </ul>
+    </div>
+    <div class="modes-cmp">
+      <div class="mock" style="background:#f2f2f7">
+        <p class="cap2" style="color:#6e6e73">浅色</p>
+        <div class="card" style="background:#ffffff"><div class="t1" style="color:#000">运输中</div><div class="t2" style="color:#6e6e73">预计 11 月 8 日送达</div></div>
+        <div class="sheet" style="background:#ffffff;color:#000;box-shadow:0 8px 24px rgba(0,0,0,.12)">弹出面板：同样是白色，靠阴影和遮罩区分层次</div>
+        <span class="btn" style="background:#0066cc;color:#fff">确认收货</span>
+      </div>
+      <div class="mock" style="background:#000000">
+        <p class="cap2" style="color:#98989f">深色</p>
+        <div class="card" style="background:#1c1c1e"><div class="t1" style="color:#fff">运输中</div><div class="t2" style="color:#98989f">预计 11 月 8 日送达</div></div>
+        <div class="sheet" style="background:#2c2c2e;color:#fff">弹出面板：用更亮一层的灰，看起来浮在前面</div>
+        <span class="btn" style="background:#0066cc;color:#fff">确认收货</span>
+      </div>
+    </div>
+    <p class="cite">深色卡片用的是 HIG 系统灰 Gray (6) 的深色值 RGB(28, 28, 30)；深色下的次要文字 #98989F 是本课自选的取值，按钮沿用浅色的 #0066CC，均已按 4.5:1 校验。</p>
+  </section>
+
+  <!-- 09 -->
+  <section class="prose">
+    <h2><span class="num">09</span>本课要点</h2>
+    <ul class="checklist">
+      <li>每个颜色都要能说出用途：中性色（大面积）、强调色（只给可点击的地方，一般一个）、语义色（错误、警告、成功）。</li>
+      <li>同一个颜色不表达两种意思；颜色含义有文化差异（中文股市红涨绿跌）。</li>
+      <li>按用途命名颜色，用系统语义色（label / secondaryLabel / systemBackground），不在代码里写死色值。</li>
+      <li>对比度：普通文字 ≥ 4.5:1，大字和图标、边框 ≥ 3:1（WCAG 2.2 AA）。苹果默认的鲜艳色未必达标，要自己算。</li>
+      <li>文字灰成套分级（iOS 四级，Ant Design 88% / 65% / 25%）。</li>
+      <li>颜色不能是唯一的信息来源，配上文字、图标或形状；"去色测试"能快速检查。</li>
+      <li>暗色模式不是反色：背景变暗、前景变亮，弹出层更亮一层；两种模式都要达标，不做 App 内单独的外观开关。</li>
+    </ul>
+  </section>
+
+  <div class="next">
+    <div>
+      <h3>下一课：间距与对齐</h3>
+      <p>8pt 网格是什么；间距怎么表达分组；对齐线为什么越少越整齐；可点区域多大才够。</p>
+    </div>
+    <a class="btn-primary" href="../04-space/index.html">继续 →</a>
+  </div>
+
+  <footer class="refs">
+    <h2>参考资料</h2>
+    <ul>
+      <li><a href="https://developer.apple.com/design/human-interface-guidelines/color" target="_blank" rel="noopener">Apple HIG · Color</a>（颜色原则、动态系统颜色、系统色板、更新记录）</li>
+      <li><a href="https://developer.apple.com/design/human-interface-guidelines/dark-mode" target="_blank" rel="noopener">Apple HIG · Dark Mode</a></li>
+      <li><a href="https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html" target="_blank" rel="noopener">WCAG 2.2 · 1.4.3 Contrast (Minimum)</a> · <a href="https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html" target="_blank" rel="noopener">1.4.11 Non-text Contrast</a> · <a href="https://www.w3.org/WAI/WCAG22/Understanding/use-of-color.html" target="_blank" rel="noopener">1.4.1 Use of Color</a></li>
+      <li><a href="https://m3.material.io/styles/color/roles" target="_blank" rel="noopener">Material 3 · Color roles</a></li>
+      <li><a href="https://ant.design/docs/spec/font-cn" target="_blank" rel="noopener">Ant Design · 字体</a>（文字颜色分级）</li>
+      <li><a href="https://pubmed.ncbi.nlm.nih.gov/22472762/" target="_blank" rel="noopener">Birch, 2012 · Worldwide prevalence of red-green color deficiency</a></li>
+      <li><a href="https://adrianroselli.com/2026/04/wcag3-contrast-as-of-april-2026.html" target="_blank" rel="noopener">Adrian Roselli · WCAG3 Contrast as of April 2026</a></li>
+    </ul>
+  </footer>
+
+</main>
+<script src="../../assets/lesson.js"></script>
+<script>
+  // WCAG 2.x 相对亮度与对比度
+  const lin = (c) => { c /= 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+  const lum = ([r, g, b]) => 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+  const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+  const hex = (rgb) => "#" + rgb.map((v) => Math.round(v).toString(16).padStart(2, "0")).join("").toUpperCase();
+  const fromHex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+  const fmt = (r) => (Math.floor(r * 100) / 100).toFixed(2);
+
+  // 01 HSL 调色器
+  (function () {
+    const h = document.getElementById("h"), s = document.getElementById("s"), l = document.getElementById("l");
+    function hslToRgb(H, S, L) {
+      S /= 100; L /= 100;
+      const k = (n) => (n + H / 30) % 12;
+      const a = S * Math.min(L, 1 - L);
+      const f = (n) => L - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+      return [f(0) * 255, f(8) * 255, f(4) * 255];
+    }
+    function card(el, r, bgName) {
+      const ok = r >= 4.5;
+      el.style.background = ok ? "var(--good-soft)" : "var(--bad-soft)";
+      el.style.color = ok ? "var(--good)" : "var(--bad)";
+      el.innerHTML = `${bgName} ${fmt(r)} : 1<small>${ok ? "可以当普通文字用" : r >= 3 ? "只够大字或图标" : "当文字太浅"}</small>`;
+    }
+    function apply() {
+      const rgb = hslToRgb(+h.value, +s.value, +l.value);
+      document.getElementById("hv").textContent = h.value + "°";
+      document.getElementById("sv").textContent = s.value + "%";
+      document.getElementById("lv").textContent = l.value + "%";
+      const sw = document.getElementById("hsl-swatch");
+      sw.style.background = hex(rgb);
+      sw.style.color = lum(rgb) > 0.18 ? "#000" : "#fff";
+      sw.textContent = `${hex(rgb)}  ·  RGB(${rgb.map(Math.round).join(", ")})`;
+      card(document.getElementById("on-white"), ratio(rgb, [255, 255, 255]), "在白底上");
+      card(document.getElementById("on-black"), ratio(rgb, [0, 0, 0]), "在黑底上");
+    }
+    [h, s, l].forEach((el) => el.addEventListener("input", apply));
+    apply();
+  })();
+
+  // 04 系统色板：取自 Apple HIG · Color · System colors（浅色、深色、浅色提高对比度、深色提高对比度）
+  (function () {
+    const C = [
+      ["Red 红", [255, 56, 60], [255, 66, 69], [233, 21, 45], [255, 97, 101]],
+      ["Orange 橙", [255, 141, 40], [255, 146, 48], [197, 83, 0], [255, 160, 86]],
+      ["Yellow 黄", [255, 204, 0], [255, 214, 0], [161, 106, 0], [254, 223, 67]],
+      ["Green 绿", [52, 199, 89], [48, 209, 88], [0, 137, 50], [74, 217, 104]],
+      ["Mint 薄荷", [0, 200, 179], [0, 218, 195], [0, 133, 117], [84, 223, 203]],
+      ["Teal 蓝绿", [0, 195, 208], [0, 210, 224], [0, 129, 152], [59, 221, 236]],
+      ["Cyan 青", [0, 192, 232], [60, 211, 254], [0, 126, 174], [109, 217, 255]],
+      ["Blue 蓝", [0, 136, 255], [0, 145, 255], [30, 110, 244], [92, 184, 255]],
+      ["Indigo 靛", [97, 85, 245], [109, 124, 255], [86, 74, 222], [167, 170, 255]],
+      ["Purple 紫", [203, 48, 224], [219, 52, 242], [176, 47, 194], [234, 141, 255]],
+      ["Pink 粉", [255, 45, 85], [255, 55, 95], [231, 18, 77], [255, 138, 196]],
+      ["Brown 棕", [172, 127, 94], [183, 138, 102], [149, 109, 81], [219, 166, 121]],
+    ];
+    const box = document.getElementById("palette");
+    function render(mode) {
+      const dark = mode % 2 === 1;
+      const bg = dark ? [0, 0, 0] : [255, 255, 255];
+      box.style.background = dark ? "#000" : "#fff";
+      box.innerHTML = C.map(([name, ...v]) => {
+        const c = v[mode];
+        const r = ratio(c, bg);
+        const ok = r >= 4.5;
+        return `<div class="sw" style="color:${dark ? "#f2f2f7" : "#1c1c1e"}"><i style="background:${hex(c)}"></i><div><b>${name}</b><br>${c.join(", ")}<br><span class="cr" style="color:${ok ? (dark ? "#6ee7a0" : "#1d7a3a") : (dark ? "#ff8a80" : "#b3261e")}">${fmt(r)} ${ok ? "✓" : "✗"}</span></div></div>`;
+      }).join("");
+    }
+    document.querySelectorAll(".modes button[data-mode]").forEach((b) =>
+      b.addEventListener("click", () => {
+        document.querySelectorAll(".modes button[data-mode]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+        render(+b.dataset.mode);
+      })
+    );
+    render(0);
+  })();
+
+  // 05 对比度计算器
+  (function () {
+    const fg = document.getElementById("cc-fg"), bg = document.getElementById("cc-bg");
+    function apply() {
+      const a = fromHex(fg.value), b = fromHex(bg.value), r = ratio(a, b);
+      const sample = document.getElementById("cc-sample");
+      sample.style.background = bg.value; sample.style.color = fg.value;
+      document.getElementById("cc-ratio").textContent = `${fmt(r)} : 1`;
+      const checks = [["普通文字 AA（4.5）", r >= 4.5], ["大字 AA（3）", r >= 3], ["图标/边框 AA（3）", r >= 3], ["普通文字 AAA（7）", r >= 7]];
+      document.getElementById("cc-badges").innerHTML = checks.map(([t, ok]) => `<span class="badge ${ok ? "pass" : "fail"}">${ok ? "✓" : "✗"} ${t}</span>`).join("");
+    }
+    [fg, bg].forEach((el) => el.addEventListener("input", apply));
+    document.querySelectorAll("#presets button").forEach((b) => b.addEventListener("click", () => { fg.value = b.dataset.fg; bg.value = b.dataset.bg; apply(); }));
+    apply();
+  })();
+
+  // 07 去色测试
+  (function () {
+    const box = document.getElementById("gray-test"), btn = document.getElementById("gray-btn");
+    btn.addEventListener("click", () => { const on = !box.classList.contains("is-gray"); box.classList.toggle("is-gray", on); btn.setAttribute("aria-pressed", String(on)); });
+  })();
+</script>
+</body>
+</html>
