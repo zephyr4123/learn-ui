@@ -1,0 +1,7 @@
+- [只讲解不出题](feedback-teach-explain-only.md) — 零基础，课程纯讲解、从零件讲起，不做题、不先考后讲
+- [用户在学 UI](user-learning-ui.md) — 研发背景、非设计出身；要可度量的规范 + 评审能力，用对照 HTML 教学
+- [MCP 工具](mcp-tools.md) — 浏览器、图标、配图、设计 prompt（仅 Claude Code）
+- [个人 skill 库总览](skill-library.md) — skill 装在哪、⚙️CC 含义、缺了怎么补
+- [前端 skill 路由](skill-routing-frontend.md) — 网页 UI、动效、手势交互用哪个 skill（impeccable 主导）
+- [通用 skill 路由](skill-routing-general.md) — 密钥、多仓、云运维、Multica、编排、长任务、去 AI 腔用哪个 skill
+- [iOS skill 路由](skill-routing-ios.md) — SwiftUI 视图、iOS 验证闭环用哪个 skill
