@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 8 课 · 动效与反馈</title>
+<link rel="stylesheet" href="../../assets/lesson.css">
+<style>
+  /* 跑道：小方块从左跑到右，用来比较时长和曲线 */
+  .lanes { display: grid; gap: 10px; }
+  .lane { display: grid; grid-template-columns: 150px 1fr; align-items: center; gap: 14px; }
+  .lane .lab { font-size: 13px; color: var(--text-2); line-height: 1.4; }
+  .lane .lab b { display: block; color: var(--text); font-size: 14px; }
+  .track { position: relative; height: 40px; border-radius: 10px; background: var(--surface-2); overflow: hidden; }
+  .runner { position: absolute; top: 6px; left: 6px; width: 28px; height: 28px; border-radius: 8px; background: var(--accent); }
+  .track.go .runner { transform: translateX(var(--dist, 300px)); }
+  .lane svg.curve { width: 44px; height: 44px; flex: none; }
+  .lab-row { display: flex; align-items: center; gap: 10px; }
+
+  /* 弹簧对比 */
+  .spring-track { position: relative; height: 56px; border-radius: 12px; background: var(--surface-2); cursor: pointer; }
+  .spring-track .ball { position: absolute; top: 10px; left: 0; width: 36px; height: 36px; border-radius: 50%; background: var(--accent); }
+  .spring-track .ball.css { transition: transform .6s ease-in-out; }
+  .spring-track .tick { position: absolute; top: 8px; bottom: 8px; width: 2px; border-radius: 1px; background: var(--line); }
+
+  /* 减弱动态效果 */
+  .rm-stage { position: relative; height: 230px; border-radius: 14px; background: linear-gradient(160deg, #dfe5f3, #efe6dc); overflow: hidden; }
+  .rm-card { position: absolute; left: 50%; bottom: 18px; width: 240px; margin-left: -120px; background: #fff; color: #1c1c1e; border-radius: 18px; padding: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.15); font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; opacity: 0; }
+  .rm-card b { display: block; font-size: 16px; margin-bottom: 4px; }
+  .rm-card span { font-size: 14px; color: #6e6e73; }
+  .rm-card.in { animation: popIn .45s cubic-bezier(.2, .9, .3, 1.25) forwards; }
+  .is-reduce .rm-card.in { animation: fadeIn .25s ease-out forwards; }
+  @keyframes popIn { from { opacity: 0; transform: translateY(80px) scale(.6) rotate(-6deg); } to { opacity: 1; transform: none; } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  /* 等待时间线 */
+  .timeline { position: relative; margin: 28px 0 8px; padding-top: 6px; }
+  .tl-bar { display: grid; grid-template-columns: 1fr 1.4fr 2fr 1.6fr; height: 44px; border-radius: 12px; overflow: hidden; font-size: 13px; font-weight: 600; }
+  .tl-bar div { display: flex; align-items: center; justify-content: center; text-align: center; padding: 0 6px; line-height: 1.3; }
+  .tl-marks { display: grid; grid-template-columns: 1fr 1.4fr 2fr 1.6fr; font-size: 13px; color: var(--text-2); margin-top: 6px; font-variant-numeric: tabular-nums; }
+  .tl-marks span { border-left: 1px solid var(--line); padding-left: 6px; }
+  .tl-marks span:first-child { border-left: 0; padding-left: 0; }
+  .tl-text { display: grid; grid-template-columns: 1fr 1.4fr 2fr 1.6fr; gap: 0; font-size: 13px; line-height: 1.6; color: var(--text-2); margin-top: 10px; }
+  .tl-text div { padding-right: 10px; }
+
+  /* 骨架屏与转圈 */
+  .skel .ln { height: 12px; border-radius: 6px; background: #e9e9ee; margin-bottom: 10px; }
+  .skel .row { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; }
+  .skel .av { width: 44px; height: 44px; border-radius: 50%; background: #e9e9ee; flex: none; }
+  .skel .ln, .skel .av { background: linear-gradient(90deg, #ececf1 0%, #f6f6f9 40%, #ececf1 80%) 0 0 / 300% 100%; animation: shimmer 1.4s linear infinite; }
+  @keyframes shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
+  .spin-wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 178px; gap: 10px; color: #6e6e73; font-size: 14px; }
+  .spin-big { width: 26px; height: 26px; border-radius: 50%; border: 3px solid #e5e5ea; border-top-color: #8e8e93; animation: spin .9s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rm-card.in { animation: fadeIn .25s ease-out forwards; }
+    .skel .ln, .skel .av { animation: none; }
+    .spin-big { animation-duration: 2.4s; }
+  }
+  @media (max-width: 860px) {
+    .lane { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+    .tl-text { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+    .tl-bar, .tl-marks { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+<main class="page">
+
+  <nav class="crumb"><a href="../../index.html">← 课程目录</a></nav>
+
+  <header class="prose">
+    <p class="eyebrow">第 8 课 / 共 9 课</p>
+    <h1>动效与反馈</h1>
+    <p class="lead">静态的界面讲完了，这一课讲"动起来"的部分：动画多长合适、用什么曲线、为什么苹果偏爱弹簧；有人看动画会头晕，要怎么照顾；还有触感反馈，以及用户等多久会不耐烦。</p>
+    <p class="meta">约 25 分钟 · 纯讲解 · 开了系统"减弱动态效果"时，本页自动播放的动画会停下或换成淡入</p>
+  </header>
+
+  <!-- 01 -->
+  <section class="prose">
+    <h2><span class="num">01</span>动效是为了说明白，不是为了好看</h2>
+    <p>HIG 动效一章的第一条：<b>有目的地加动效，支撑体验而不是喧宾夺主</b>，不要为了动而动；多余或过度的动画会分散注意力，甚至让人身体不适。几条具体要求：</p>
+    <ul>
+      <li><b>动效要符合手势和预期</b>。HIG 的例子：从顶部往下拉出来的视图，用户不会想到要往旁边滑才能关掉。</li>
+      <li><b>反馈动画要简短、精确</b>。轻快的反馈往往比夸张的动画更能说清信息。</li>
+      <li><b>频繁的操作一般不加动画</b>。系统控件已经有很细微的动画；自定义控件如果每点一次都要看一段动画，就是在浪费用户的时间。</li>
+      <li><b>动画要能打断</b>。尽量不要让用户等动画播完才能操作，尤其是会反复看到的动画。</li>
+      <li><b>动效是可选的</b>。不是每个人都能或都想看动画，所以重要信息不能只靠动画传达，要配合触感、声音等其他方式。</li>
+    </ul>
+  </section>
+
+  <!-- 02 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">02</span>时长：多数动画在 100～500 毫秒</h2>
+      <p>NN/g 的结论：<b>大多数界面动画应该在 100～500 毫秒之间</b>，而且在不显得突兀的前提下越短越好。</p>
+      <ul>
+        <li><b>小反馈</b>（勾选框、开关）：约 100 毫秒，感觉是"立刻"。</li>
+        <li><b>较大的变化</b>（弹窗出现）：200～300 毫秒。移动距离越长需要越久，大屏上的大幅移动以 400 毫秒为上限。</li>
+        <li><b>到 500 毫秒</b>，动画就开始让人觉得拖沓。实际项目里"太慢"比"太快"常见得多。</li>
+        <li><b>进场比退场稍长</b>：东西出现时多给一点时间，消失可以快一些。</li>
+      </ul>
+      <p>点下面的按钮，同一段距离用四种时长跑一遍：</p>
+    </div>
+    <div class="demo">
+      <div class="demo-controls"><button type="button" id="play-dur">播放</button></div>
+      <div class="lanes" id="dur-lanes">
+        <div class="lane"><div class="lab"><b>100 毫秒</b>小反馈</div><div class="track" style="--t:100ms"><span class="runner"></span></div></div>
+        <div class="lane"><div class="lab"><b>250 毫秒</b>弹窗、页面切换</div><div class="track" style="--t:250ms"><span class="runner"></span></div></div>
+        <div class="lane"><div class="lab"><b>500 毫秒</b>开始觉得慢</div><div class="track" style="--t:500ms"><span class="runner"></span></div></div>
+        <div class="lane"><div class="lab"><b>1000 毫秒</b>明显在等</div><div class="track" style="--t:1000ms"><span class="runner"></span></div></div>
+      </div>
+      <p class="cite">四条跑道都用同一条曲线（Material 3 的 standard 缓动），只有时长不同。</p>
+    </div>
+    <div class="prose" style="margin-top:24px">
+      <p>Material 3 把时长也做成了一张"清单"（和第 1 课的 Design Token 一个思路）：短 50～200 毫秒、中 250～400 毫秒、长 450～600 毫秒、超长 700～1000 毫秒，每档四级。</p>
+    </div>
+  </section>
+
+  <!-- 03 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">03</span>曲线：现实里没有匀速运动</h2>
+      <p>同样的时长，速度怎么分配也很关键，这就是<b>缓动曲线</b>。NN/g 的说法：</p>
+      <ul>
+        <li><b>匀速（linear）</b>看起来不自然，现实中的物体总是有加速、减速。</li>
+        <li><b>先快后慢（ease-out）</b>是进场最常用的：一开始就动，显得响应快，最后慢下来，让眼睛跟得上落点。</li>
+        <li><b>先慢后快（ease-in）</b>有时用于退场；用在进场会显得反应迟钝，因为刚开始几乎不动。</li>
+      </ul>
+      <p>四条跑道时长都是 600 毫秒，只有曲线不同。每条左边的小图是速度变化的曲线（横轴时间、纵轴位置）：</p>
+    </div>
+    <div class="demo">
+      <div class="demo-controls"><button type="button" id="play-ease">播放</button></div>
+      <div class="lanes" id="ease-lanes"></div>
+      <p class="cite">Material 3 的曲线取自官方令牌：standard <code>cubic-bezier(0.2, 0, 0, 1)</code>，emphasized decelerate <code>cubic-bezier(0.05, 0.7, 0.1, 1)</code>。</p>
+    </div>
+  </section>
+
+  <!-- 04 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">04</span>弹簧：可以随时被打断的动画</h2>
+      <p>上面的动画都是"固定时长 + 曲线"。苹果的系统动画大多用另一种描述方式：<b>弹簧</b>。从 iOS 17 起，SwiftUI 的默认动画就是一个弹簧（官方文档写明 response 0.55、阻尼 1.0，也就是不回弹）。</p>
+      <p>弹簧的关键优势是<b>能被打断</b>。SwiftUI 文档的说法：同一个属性上的弹簧动画会被下一个接替，<b>并保留上一个的速度</b>。比如用户把半屏弹窗往上拉到一半又往下拨，弹窗会顺着当时的速度自然转向，而不是突然停住再重新出发。</p>
+      <p>下面两条跑道，快速连续点"去左边"、"去右边"，对比打断时的样子：</p>
+    </div>
+    <div class="demo">
+      <div class="demo-controls">
+        <button type="button" id="to-left">去左边</button>
+        <button type="button" id="to-right">去右边</button>
+      </div>
+      <div class="lanes">
+        <div class="lane"><div class="lab"><b>弹簧</b>打断时保留速度，平滑转向</div><div class="spring-track" id="sp-track"><span class="ball" id="sp-ball"></span></div></div>
+        <div class="lane"><div class="lab"><b>固定时长曲线</b>打断时从零速重新开始</div><div class="spring-track" id="css-track"><span class="ball css" id="css-ball"></span></div></div>
+      </div>
+      <p class="cite">弹簧是本页用物理公式模拟的示意（阻尼比 0.85，有一点回弹），不是 SwiftUI 的原始实现；第二条是 600 毫秒的 ease-in-out。</p>
+    </div>
+    <div class="prose" style="margin-top:24px">
+      <p>SwiftUI 里写弹簧只需要两个直观的参数：<b>时长</b>（大致多久停稳）和<b>回弹</b>（0 不回弹，越接近 1 越弹）。系统还给了三个现成的：</p>
+<pre class="code">withAnimation(.smooth) { ... }   // 平滑，不回弹
+withAnimation(.snappy) { ... }   // 利落，轻微回弹
+withAnimation(.bouncy) { ... }   // 明显回弹
+withAnimation(.spring(duration: 0.4, bounce: 0.2)) { ... }</pre>
+      <p>Material 3 的新版动效令牌里也有弹簧参数（阻尼、刚度）。</p>
+    </div>
+  </section>
+
+  <!-- 05 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">05</span>减弱动态效果：有人看动画会晕</h2>
+      <p>HIG 无障碍一章的提醒：快速移动和闪烁的动画用多了会分散注意力、引起头晕，<b>某些情况下甚至会诱发癫痫</b>。容易受影响的人会打开系统的"减弱动态效果"（Reduce Motion）。打开时，App 要减少自动播放和重复的动画，包括缩放和视野边缘的运动。HIG 列出的做法：</p>
+      <ul>
+        <li>把弹簧调"紧"，减少回弹；</li>
+        <li>让动画直接跟随手势，而不是自己飞；</li>
+        <li>避免在纵深方向（z 轴）做层级变化的动画；</li>
+        <li><b>把平移类的转场换成淡入淡出</b>；</li>
+        <li>避免从模糊中出现或消失到模糊里。</li>
+      </ul>
+      <p>打开下面的"模拟减弱动态效果"，对比同一张卡片出现的方式：</p>
+    </div>
+    <div class="demo">
+      <div class="demo-controls">
+        <button type="button" id="rm-play">让卡片出现</button>
+        <button type="button" data-action="reduce">模拟减弱动态效果</button>
+      </div>
+      <div class="rm-stage"><div class="rm-card" id="rm-card"><b>已加入购物车</b><span>降噪蓝牙耳机 Pro × 1</span></div></div>
+    </div>
+    <div class="prose" style="margin-top:24px">
+      <p><b>写代码</b>：SwiftUI 读 <code>@Environment(\.accessibilityReduceMotion)</code>，官方文档说为真时"界面应避免大幅动画，尤其是模拟三维的动画"。网页用 <code>@media (prefers-reduced-motion: reduce)</code>。</p>
+      <p>WCAG 里相关的三条：</p>
+    </div>
+    <div class="spec-wrap">
+      <table class="spec">
+        <thead><tr><th>条款</th><th>级别</th><th>要求</th></tr></thead>
+        <tbody>
+          <tr><td>2.3.1 三次闪烁</td><td>A</td><td>任何一秒内闪烁不超过三次（或低于闪烁阈值）</td></tr>
+          <tr><td>2.2.2 暂停、停止、隐藏</td><td>A</td><td>自动开始、持续超过 5 秒、和其他内容同时出现的移动、闪烁、滚动内容（比如自动轮播），要给用户暂停、停止或隐藏的办法</td></tr>
+          <tr><td>2.3.3 交互触发的动画</td><td>AAA</td><td>由交互触发的动画可以被关掉，除非动画本身是功能必需的</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 06 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">06</span>触感反馈：用对含义，别用太多</h2>
+      <p>iPhone 能用震动马达做出各种"触感"。开关、滑块、选择器这些系统控件会自动播放触感；自己要加时，HIG 的规定：</p>
+      <ul>
+        <li><b>按系统定义的含义使用</b>。用户熟悉这些触感，是因为系统在标准控件上一直这么用；含义对不上，就别挪用。</li>
+        <li><b>保持一致</b>：同一种操作配同一种触感，用户才能建立因果联系。</li>
+        <li><b>配合其他反馈</b>：触感的强弱、软硬要和它伴随的动画匹配。</li>
+        <li><b>别用太多</b>：偶尔一次恰到好处，频繁了就烦人。HIG 说最好的触感往往是"用户没意识到，但关掉会想念"。</li>
+        <li><b>短触感配离散事件</b>；触感要可以关掉。</li>
+      </ul>
+    </div>
+    <div class="spec-wrap">
+      <table class="spec">
+        <thead><tr><th>类别</th><th>种类</th><th>用在</th></tr></thead>
+        <tbody>
+          <tr><td><b>通知</b></td><td>成功、警告、错误</td><td>一个任务或操作的结果，比如存入支票、解锁车辆</td></tr>
+          <tr><td><b>撞击</b></td><td>轻、中、重、硬、软</td><td>配合视觉的物理感，比如视图卡到位时轻轻一下</td></tr>
+          <tr><td><b>选择</b></td><td>选择</td><td>控件的值正在变化，比如滚动选择器</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="prose">
+<pre class="code">// SwiftUI（iOS 17 起）：值变化时播放对应触感
+Button("付款") { pay() }
+    .sensoryFeedback(.success, trigger: paidCount)</pre>
+    </div>
+  </section>
+
+  <!-- 07 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">07</span>等待：多慢算慢</h2>
+      <p>尼尔森（Jakob Nielsen）总结的三道响应时间线，到今天仍是行业通用的参照：</p>
+    </div>
+    <div class="timeline" aria-label="响应时间的三道线">
+      <div class="tl-bar">
+        <div style="background:#e3f2e6;color:#1d6b33">感觉"立刻"</div>
+        <div style="background:#eef2fb;color:#2c4aa8">注意到了，思路不断</div>
+        <div style="background:#fdf3e2;color:#8a5a00">还在等，但开始走神</div>
+        <div style="background:#fbe9e7;color:#a12a1c">去干别的了</div>
+      </div>
+      <div class="tl-marks"><span>0</span><span>0.1 秒</span><span>1 秒</span><span>10 秒</span></div>
+      <div class="tl-text">
+        <div><b>0.1 秒内</b>：像直接操控实物，直接显示结果，不需要额外反馈。</div>
+        <div><b>1 秒内</b>：用户会察觉延迟，但思路不会断。按钮立刻变成按下或加载的样子就够了。</div>
+        <div><b>1～10 秒</b>：要有进度提示。NN/g：2～10 秒用转圈这类循环动画；不到 1 秒不要放转圈，一闪而过反而干扰。</div>
+        <div><b>超过 10 秒</b>：用户会去干别的。用显示百分比的进度条，告诉他还要多久，并且给一个取消的办法。</div>
+      </div>
+    </div>
+    <div class="prose" style="margin-top:24px">
+      <p>整页加载时，NN/g 推荐用<b>骨架屏</b>：先画出内容的轮廓，再逐步填进真实内容。它适合 10 秒以内的整页加载；单个模块（一张卡片、一个视频）加载时用转圈更合适；上传、下载、文件转换这类过程不适合骨架屏，用进度条。</p>
+    </div>
+    <div class="samples" style="--cols:2">
+      <div class="sample">
+        <div class="cap"><span>整页只放一个转圈</span><span class="verdict no">不知道会出现什么</span></div>
+        <div class="paper"><div class="spin-wrap"><span class="spin-big" aria-hidden="true"></span>加载中…</div></div>
+      </div>
+      <div class="sample">
+        <div class="cap"><span>骨架屏</span><span class="verdict ok">先看到页面会长什么样</span></div>
+        <div class="paper skel" aria-label="正在加载">
+          <div class="row"><span class="av"></span><div style="flex:1"><div class="ln" style="width:45%"></div><div class="ln" style="width:70%;margin-bottom:0"></div></div></div>
+          <div class="row"><span class="av"></span><div style="flex:1"><div class="ln" style="width:55%"></div><div class="ln" style="width:80%;margin-bottom:0"></div></div></div>
+          <div class="row" style="margin-bottom:0"><span class="av"></span><div style="flex:1"><div class="ln" style="width:40%"></div><div class="ln" style="width:65%;margin-bottom:0"></div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="prose" style="margin-top:24px">
+      <p>HIG 对加载的要求也是一致的：<b>尽快显示点什么</b>（什么都不显示，用户会以为 App 出了问题）；能算出进度时用<b>有确定进度的指示器</b>；进度指示器要<b>一直在动</b>，静止不动会被当成卡死；报进度要尽量准确，"5 秒走到 90%，最后 10% 走 5 分钟"会让人觉得被骗。</p>
+      <div class="callout">
+        <p>最后一点提醒：骨架屏、转圈都只是让等待好受一点。NN/g 也说，它们<b>代替不了性能优化</b>。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 08 -->
+  <section class="prose">
+    <h2><span class="num">08</span>本课要点</h2>
+    <ul class="checklist">
+      <li>动效要有目的：说明关系、给出反馈；不为动而动；频繁操作不加动画；动画能打断；重要信息不只靠动画。</li>
+      <li>时长：多数 100～500 毫秒；小反馈约 100，弹窗 200～300，大幅移动 ≤ 400；500 开始拖沓；进场略长于退场。</li>
+      <li>曲线：不用匀速；进场用先快后慢（ease-out），退场可用先慢后快。</li>
+      <li>弹簧可打断、保留速度；SwiftUI 默认动画（iOS 17 起）就是弹簧；用 <code>.smooth</code> / <code>.snappy</code> / <code>.bouncy</code> 或 <code>.spring(duration:bounce:)</code>。</li>
+      <li>减弱动态效果打开时：平移换淡入淡出、弹簧调紧、不做纵深和模糊动画（HIG）。代码读 <code>accessibilityReduceMotion</code> / <code>prefers-reduced-motion</code>。自动播放超过 5 秒要能暂停（WCAG 2.2.2）。</li>
+      <li>触感：按系统含义用（通知、撞击、选择），一致、少用、可关。</li>
+      <li>等待：0.1 秒感觉立刻，1 秒思路不断，10 秒开始走神。2～10 秒转圈，10 秒以上进度条加取消；整页加载用骨架屏。</li>
+    </ul>
+  </section>
+
+  <div class="next">
+    <div>
+      <h3>最后一课：怎么看懂一个界面</h3>
+      <p>把前 8 课串起来：拿到一个界面，按什么顺序看，怎么说清好在哪、差在哪、怎么改。</p>
+    </div>
+    <a class="btn-primary" href="../09-review/index.html">继续 →</a>
+  </div>
+
+  <footer class="refs">
+    <h2>参考资料</h2>
+    <ul>
+      <li><a href="https://developer.apple.com/design/human-interface-guidelines/motion" target="_blank" rel="noopener">Apple HIG · Motion</a> · <a href="https://developer.apple.com/design/human-interface-guidelines/accessibility" target="_blank" rel="noopener">Accessibility</a>（减弱动态效果） · <a href="https://developer.apple.com/design/human-interface-guidelines/playing-haptics" target="_blank" rel="noopener">Playing haptics</a></li>
+      <li><a href="https://developer.apple.com/design/human-interface-guidelines/loading" target="_blank" rel="noopener">Apple HIG · Loading</a> · <a href="https://developer.apple.com/design/human-interface-guidelines/progress-indicators" target="_blank" rel="noopener">Progress indicators</a> · <a href="https://developer.apple.com/design/human-interface-guidelines/feedback" target="_blank" rel="noopener">Feedback</a></li>
+      <li><a href="https://developer.apple.com/documentation/swiftui/animation/default" target="_blank" rel="noopener">SwiftUI · Animation.default</a> · <a href="https://developer.apple.com/documentation/swiftui/animation/spring(duration:bounce:blendduration:)" target="_blank" rel="noopener">spring(duration:bounce:)</a> · <a href="https://developer.apple.com/documentation/swiftui/environmentvalues/accessibilityreducemotion" target="_blank" rel="noopener">accessibilityReduceMotion</a> · <a href="https://developer.apple.com/documentation/swiftui/view/sensoryfeedback(_:trigger:)" target="_blank" rel="noopener">sensoryFeedback</a></li>
+      <li><a href="https://github.com/material-components/material-web/blob/main/tokens/versions/latest/sass/_md-sys-motion.scss" target="_blank" rel="noopener">Material 3 动效令牌（md.sys.motion）</a></li>
+      <li><a href="https://www.nngroup.com/articles/animation-duration/" target="_blank" rel="noopener">NN/g · Executing UX Animations: Duration and Motion Characteristics</a></li>
+      <li><a href="https://www.nngroup.com/articles/response-times-3-important-limits/" target="_blank" rel="noopener">NN/g · Response Times: The 3 Important Limits</a> · <a href="https://www.nngroup.com/articles/progress-indicators/" target="_blank" rel="noopener">Progress Indicators</a> · <a href="https://www.nngroup.com/articles/skeleton-screens/" target="_blank" rel="noopener">Skeleton Screens 101</a></li>
+      <li><a href="https://www.w3.org/WAI/WCAG22/Understanding/animation-from-interactions.html" target="_blank" rel="noopener">WCAG 2.2 · 2.3.3</a> · <a href="https://www.w3.org/WAI/WCAG22/Understanding/pause-stop-hide.html" target="_blank" rel="noopener">2.2.2</a> · <a href="https://www.w3.org/WAI/WCAG22/Understanding/three-flashes-or-below-threshold.html" target="_blank" rel="noopener">2.3.1</a></li>
+    </ul>
+  </footer>
+
+</main>
+<script src="../../assets/lesson.js"></script>
+<script>
+  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
+
+  // 跑道公用：按跑道宽度算出终点距离，切换 go 类触发过渡
+  function runLanes(box) {
+    box.querySelectorAll(".track").forEach((t) => {
+      t.style.setProperty("--dist", (t.clientWidth - 40) + "px");
+      t.classList.remove("go");
+    });
+    // 先回到起点，下一帧再出发
+    requestAnimationFrame(() => requestAnimationFrame(() => box.querySelectorAll(".track").forEach((t) => t.classList.add("go"))));
+  }
+  function setTransitions(box) {
+    box.querySelectorAll(".track").forEach((t) => {
+      const r = t.querySelector(".runner");
+      r.style.transition = `transform ${t.style.getPropertyValue("--t") || "600ms"} ${t.dataset.ease || "cubic-bezier(0.2, 0, 0, 1)"}`;
+    });
+  }
+
+  // 02 时长
+  (function () {
+    const box = document.getElementById("dur-lanes");
+    setTransitions(box);
+    document.getElementById("play-dur").addEventListener("click", () => runLanes(box));
+  })();
+
+  // 03 曲线：画出每条曲线的小图，再生成跑道
+  (function () {
+    const E = [
+      ["匀速", "linear", [0, 0, 1, 1]],
+      ["先慢后快 ease-in", "ease-in", [0.42, 0, 1, 1]],
+      ["先快后慢 ease-out", "ease-out", [0, 0, 0.58, 1]],
+      ["Material 3 standard", "cubic-bezier(0.2, 0, 0, 1)", [0.2, 0, 0, 1]],
+    ];
+    const box = document.getElementById("ease-lanes");
+    box.innerHTML = E.map(([name, css, [x1, y1, x2, y2]]) => {
+      const p = (x, y) => `${4 + x * 36} ${40 - y * 36}`;
+      const svg = `<svg class="curve" viewBox="0 0 44 44" aria-hidden="true"><rect x="4" y="4" width="36" height="36" fill="none" stroke="currentColor" stroke-opacity=".15"/><path d="M${p(0, 0)} C${p(x1, y1)} ${p(x2, y2)} ${p(1, 1)}" fill="none" stroke="currentColor" stroke-width="2"/></svg>`;
+      return `<div class="lane"><div class="lab lab-row">${svg}<b>${name}</b></div><div class="track" style="--t:600ms" data-ease="${css}"><span class="runner"></span></div></div>`;
+    }).join("");
+    setTransitions(box);
+    document.getElementById("play-ease").addEventListener("click", () => runLanes(box));
+  })();
+
+  // 04 弹簧 vs 固定时长：弹簧用阻尼振子逐帧积分，换目标时速度保留
+  (function () {
+    const spBall = document.getElementById("sp-ball"), cssBall = document.getElementById("css-ball");
+    const spTrack = document.getElementById("sp-track");
+    const OMEGA = 2 * Math.PI / 0.5, ZETA = 0.85;   // 约 0.5 秒停稳，轻微回弹
+    let x = 0, v = 0, target = 0, last = 0, running = false;
+    const maxX = () => spTrack.clientWidth - 36;
+    function step(t) {
+      const dt = Math.min((t - last) / 1000, 1 / 30); last = t;
+      const a = -OMEGA * OMEGA * (x - target) - 2 * ZETA * OMEGA * v;
+      v += a * dt; x += v * dt;
+      spBall.style.transform = `translateX(${x}px)`;
+      if (Math.abs(x - target) < 0.3 && Math.abs(v) < 2) { x = target; spBall.style.transform = `translateX(${x}px)`; running = false; return; }
+      requestAnimationFrame(step);
+    }
+    function go(side) {
+      target = side === "left" ? 0 : maxX();
+      cssBall.style.transform = `translateX(${target}px)`;
+      if (reduceMotion.matches) { x = target; v = 0; spBall.style.transform = `translateX(${x}px)`; return; }
+      if (!running) { running = true; last = performance.now(); requestAnimationFrame(step); }
+    }
+    document.getElementById("to-left").addEventListener("click", () => go("left"));
+    document.getElementById("to-right").addEventListener("click", () => go("right"));
+  })();
+
+  // 05 减弱动态效果：重新触发卡片的进场动画
+  (function () {
+    const card = document.getElementById("rm-card");
+    document.getElementById("rm-play").addEventListener("click", () => {
+      card.classList.remove("in");
+      void card.offsetWidth;   // 强制重排，才能重新播放同一个动画
+      card.classList.add("in");
+    });
+  })();
+</script>
+</body>
+</html>
