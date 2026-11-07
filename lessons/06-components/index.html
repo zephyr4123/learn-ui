@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 6 课 · 组件、形状与状态</title>
+<link rel="stylesheet" href="../../assets/lesson.css">
+<style>
+  /* 按钮样张（演示用，取值见各节说明） */
+  .ui-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; padding: 0 20px; border-radius: 12px; font: 600 16px/1 -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; border: 0; cursor: pointer; white-space: nowrap; }
+  .ui-btn.fill { background: #0066cc; color: #fff; }
+  .ui-btn.tint { background: rgba(0, 102, 204, .12); color: #0058b0; }
+  .ui-btn.plain { background: none; color: #0066cc; padding: 0 8px; }
+  .ui-btn.danger { background: none; color: #d70015; padding: 0 8px; }
+  .ui-btn.sm { height: 32px; font-size: 13px; padding: 0 12px; border-radius: 8px; }
+  .ui-btn.lg { height: 52px; font-size: 18px; padding: 0 32px; border-radius: 14px; }
+  .ladder { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 24px; }
+  .ladder .sample { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+  .ladder .sample p { margin: 0; font-size: 13px; color: var(--text-2); line-height: 1.6; }
+  .paper.mini { width: 100%; display: flex; justify-content: center; align-items: center; padding: 14px 10px; }
+  .btn-row { display: flex; gap: 12px; align-items: center; justify-content: center; padding: 10px 0; }
+  .btn-row .ui-btn { flex: 1; }
+  .btn-row .ui-btn.sm { flex: none; }
+
+  /* 同心圆角 */
+  .conc-stage { display: flex; justify-content: center; padding: 8px 0 4px; }
+  .outer { width: 300px; max-width: 100%; height: 190px; border-radius: 32px; background: #dfe5f3; transition: padding .15s; }
+  .inner { width: 100%; height: 100%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.12); transition: border-radius .15s; }
+  .conc-readout { text-align: center; font-size: 14px; color: var(--text-2); font-variant-numeric: tabular-nums; margin: 12px 0 0; }
+  .shapes3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 20px; }
+  .shapes3 .sample { text-align: center; }
+  .shapes3 .shp { height: 64px; margin: 6px auto 12px; background: #0066cc; }
+  .shapes3 p { margin: 0; font-size: 13px; color: var(--text-2); line-height: 1.6; }
+
+  /* 图标 */
+  .modes4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 20px; }
+  .modes4 .sample { text-align: center; }
+  .modes4 svg { width: 72px; height: 72px; display: block; }
+  .modes4 p { margin: 0; font-size: 13px; color: var(--text-2); line-height: 1.6; }
+  .icon-row { display: flex; justify-content: space-around; align-items: center; padding: 10px 0 2px; color: #1c1c1e; }
+  .icon-row svg { width: 28px; height: 28px; }
+
+  /* 状态 */
+  .state-btn { position: relative; min-width: 180px; transition: background-color .15s, box-shadow .1s; }
+  .state-btn:active { box-shadow: inset 0 0 0 999px rgba(255, 255, 255, .1); }
+  .state-btn .spin { display: none; width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; animation: spin .8s linear infinite; }
+  .is-loading .state-btn .spin { display: block; }
+  .is-loading .state-btn .l-idle, .state-btn .l-busy { display: none; }
+  .is-loading .state-btn .l-busy { display: inline; }
+  .is-disabled .state-btn, .ui-btn.disabled { background: rgba(120, 120, 128, .16); color: rgba(60, 60, 67, .3); cursor: not-allowed; box-shadow: none; }
+  .is-disabled .state-btn .spin { border-color: rgba(60,60,67,.15); border-top-color: rgba(60,60,67,.4); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .live { display: flex; justify-content: center; padding: 16px 0 8px; }
+  .gallery { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 20px; }
+  .gallery .sample { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+  .gallery .ui-btn { width: 100%; padding: 0 8px; }
+  .gallery p { margin: 0; font-size: 13px; color: var(--text-2); line-height: 1.6; }
+  .ui-btn.pressed { box-shadow: inset 0 0 0 999px rgba(255, 255, 255, .1); }
+  .ui-btn .spin2 { width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; animation: spin .8s linear infinite; }
+
+  /* 表单 */
+  .form label { display: block; font-size: 13px; color: #6e6e73; margin: 0 0 4px; }
+  .form input { width: 100%; font: 16px/1.4 -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; color: #1c1c1e; background: #fff; border: 1px solid #c7c7cc; border-radius: 10px; padding: 10px 12px; }
+  .form input::placeholder { color: #6e6e73; }
+  .form input.err { border-color: #d70015; border-width: 1.5px; }
+  .form .f { margin-bottom: 14px; }
+  .form .f:last-child { margin-bottom: 0; }
+  .form .msg { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #d70015; margin-top: 6px; }
+
+  /* 空状态与报错 */
+  .state-card { text-align: center; padding: 28px 16px; min-height: 210px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .state-card .ic { width: 44px; height: 44px; color: #8e8e93; margin-bottom: 12px; }
+  .state-card .h { font-size: 16px; font-weight: 600; margin: 0 0 4px; }
+  .state-card .d { font-size: 14px; color: #6e6e73; margin: 0 0 16px; line-height: 1.6; }
+  .state-card .faint { font-size: 14px; color: #6e6e73; margin: 0; }
+  .state-card code { background: #f2f2f7; color: #1c1c1e; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .state-btn .spin, .ui-btn .spin2 { animation-duration: 2.4s; }
+  }
+  @media (max-width: 860px) {
+    .ladder, .gallery, .modes4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .shapes3 { grid-template-columns: minmax(0, 1fr); }
+  }
+</style>
+</head>
+<body>
+<main class="page">
+
+  <nav class="crumb"><a href="../../index.html">← 课程目录</a></nav>
+
+  <header class="prose">
+    <p class="eyebrow">第 6 课 / 共 9 课</p>
+    <h1>组件、形状与状态</h1>
+    <p class="lead">前面几课讲的是零件：文字、颜色、间距。这一课讲零件组装成的<b>组件</b>：按钮怎么分主次，圆角怎么套圆角，图标怎么保持一致，以及最容易被漏掉的部分，组件在按下、禁用、加载、出错、没有内容时该长什么样。</p>
+    <p class="meta">约 30 分钟 · 纯讲解</p>
+  </header>
+
+  <!-- 01 -->
+  <section class="prose">
+    <h2><span class="num">01</span>组件：零件的固定组合</h2>
+    <p>一个按钮由几种零件组成：文字（字号、字重）、颜色（底色、文字色）、形状（圆角）、间距（内边距）。HIG 把按钮拆成三个属性：</p>
+    <ul>
+      <li><b>样式</b>：大小、颜色、形状。</li>
+      <li><b>内容</b>：图标、文字，或两者都有。</li>
+      <li><b>角色</b>：系统定义的语义，比如"主要"、"取消"、"危险"，角色会影响外观。</li>
+    </ul>
+    <p>为什么尽量用系统组件？HIG 说系统按钮"自带交互状态、无障碍支持和外观适配"。自己画一个按钮，就要自己负责按下的样子、禁用的样子、深色模式、动态字体、读屏朗读……这些在第 05 节都会看到。</p>
+  </section>
+
+  <!-- 02 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">02</span>按钮的主次：用样式分，不用大小分</h2>
+      <p>按钮有一套从重到轻的样式阶梯。SwiftUI 里对应的写法：</p>
+    </div>
+    <div class="ladder">
+      <div class="sample"><div class="paper mini"><span class="ui-btn fill">立即购买</span></div><p><b>实心</b><br><code>.borderedProminent</code><br>最可能的操作</p></div>
+      <div class="sample"><div class="paper mini"><span class="ui-btn tint">加入购物车</span></div><p><b>浅底</b><br><code>.bordered</code><br>次要操作</p></div>
+      <div class="sample"><div class="paper mini"><span class="ui-btn plain">查看详情</span></div><p><b>纯文字</b><br><code>.borderless</code><br>辅助操作</p></div>
+      <div class="sample"><div class="paper mini"><span class="ui-btn danger">删除订单</span></div><p><b>危险</b><br><code>role: .destructive</code><br>系统用红色</p></div>
+    </div>
+    <p class="cite">iOS 26 起还有液态玻璃版本：<code>.glassProminent</code>（对应实心）和 <code>.glass</code>。样张颜色是本课示例取值，不是系统色。</p>
+    <div class="prose">
+      <p>HIG 关于按钮主次的几条规定：</p>
+      <ul>
+        <li><b>醒目的按钮给最可能的操作</b>，一个视图里保持一两个。太多会增加认知负担（第 5 课讲过）。</li>
+        <li><b>用样式而不是大小区分主次</b>。HIG 的原话："一组选项用同样大小的按钮，表示它们是一组；两个大小不同的按钮放在一起，界面会显得混乱、不一致。"</li>
+        <li><b>危险操作不要设成主要按钮</b>，哪怕它最常用。因为醒目的按钮"人们有时不读就点"。</li>
+      </ul>
+    </div>
+    <div class="samples" style="--cols:2">
+      <div class="sample">
+        <div class="cap"><span>用大小分主次</span><span class="verdict no">像两个不相干的东西</span></div>
+        <div class="paper"><div class="btn-row"><span class="ui-btn tint sm">稍后再说</span><span class="ui-btn fill lg">开启通知</span></div></div>
+      </div>
+      <div class="sample">
+        <div class="cap"><span>同样大小，用样式分</span><span class="verdict ok">一组选项，主次清楚</span></div>
+        <div class="paper"><div class="btn-row"><span class="ui-btn tint">稍后再说</span><span class="ui-btn fill">开启通知</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">03</span>形状：圆角套圆角要"同心"</h2>
+      <p>苹果在 2025 年 WWDC 介绍新设计系统时，把界面里的形状分成三种：</p>
+    </div>
+    <div class="shapes3">
+      <div class="sample"><div class="shp" style="width:120px;border-radius:14px"></div><p><b>固定圆角</b><br>半径是一个固定的数</p></div>
+      <div class="sample"><div class="shp" style="width:160px;height:52px;margin-top:12px;margin-bottom:18px;border-radius:26px"></div><p><b>胶囊</b><br>半径 = 高度的一半</p></div>
+      <div class="sample"><div class="shp" style="width:120px;border-radius:22px;padding:8px;background:#dfe5f3"><div style="height:100%;border-radius:14px;background:#0066cc"></div></div><p><b>同心</b><br>半径 = 外层半径 − 内边距</p></div>
+    </div>
+    <div class="prose" style="margin-top:24px">
+      <p>"同心"解决的是一个很常见的问题：卡片里套卡片、面板里放按钮时，里外两层圆角怎么配。苹果的原话是："留意那些显得太'捏紧'或太'张开'的圆角，它们会制造紧张感，打破平衡。"下面拖动内边距、切换三种配法，看拐角处的空隙：</p>
+    </div>
+    <div class="demo">
+      <div class="demo-controls" id="conc-modes" role="group" aria-label="内圆角的配法">
+        <button type="button" data-mode="concentric" aria-pressed="true">同心：内 = 外 − 内边距</button>
+        <button type="button" data-mode="same" aria-pressed="false">内外同半径</button>
+        <button type="button" data-mode="small" aria-pressed="false">内圆角固定 4</button>
+      </div>
+      <div class="slider" style="max-width:420px;margin:0 auto 14px"><label for="pad">内边距 <span id="padv"></span></label><input type="range" id="pad" min="4" max="28" value="12"></div>
+      <div class="conc-stage"><div class="outer" id="outer"><div class="inner" id="inner"></div></div></div>
+      <p class="conc-readout" id="conc-readout"></p>
+    </div>
+    <div class="prose" style="margin-top:24px">
+      <p>同心时，里外两条弧线平行，拐角处的空隙和四边一样宽。内外同半径时，拐角处的空隙变宽，里层的角显得过圆、往里缩；内圆角太小时，拐角处的空隙变窄，里层的角像要顶出去。</p>
+      <ul>
+        <li><b>iPhone 上</b>，苹果建议贴近屏幕边缘的控件用胶囊形，并多留一些边距；iPad 和 Mac 上则用和窗口边缘同心的形状。</li>
+        <li><b>写代码</b>：iOS 26 的 SwiftUI 提供了 <code>ConcentricRectangle</code>，能按外层容器自动算出同心圆角。网页上只能手算：<code>内半径 = 外半径 − 内边距</code>。</li>
+        <li><b>连续圆角</b>：苹果的圆角不是"四分之一圆接直线"，而是曲率连续过渡的曲线，拐角更柔和。SwiftUI 写 <code>RoundedRectangle(cornerRadius: 16, style: .continuous)</code>。</li>
+        <li><b>圆角也从清单里挑</b>：和字号、间距一样，一个产品用几种固定的圆角，不要每个组件随手定。</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 04 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">04</span>图标：风格一致，粗细跟着文字走</h2>
+      <p>iOS 的图标首选 <b>SF Symbols</b>，苹果的官方图标库。HIG 的介绍是："几千个风格统一、可高度配置的符号，和系统字体 San Francisco 无缝配合，在所有字重和字号下自动与文字对齐。"几个要点：</p>
+      <ul>
+        <li><b>9 种字重</b>，从 Ultralight 到 Black，和系统字体的字重一一对应。所以图标旁边的文字是 Semibold，图标也用 Semibold，粗细就一致。</li>
+        <li><b>3 种比例</b>：小、中（默认）、大，以字体的大写字母高度为基准。想让图标比文字更突出或更低调，调比例而不是调字号。</li>
+        <li><b>空心和实心</b>：空心（outline）最常用，适合工具栏、列表这类和文字放在一起的地方；实心（fill）更醒目，适合标签栏、滑动操作和表示"已选中"。很多时候系统会替你选，比如 iOS 标签栏默认用实心，工具栏用空心。</li>
+      </ul>
+      <p>SF Symbols 还有 <b>4 种着色方式</b>。一个符号由几层组成（下面的示意图标分三层：云、太阳、雨滴），着色方式决定每层怎么上色：</p>
+    </div>
+    <div class="modes4">
+      <div class="sample"><div class="paper mini"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="11" cy="10" r="5.2" fill="#0066cc"/><path d="M9.5 23h13a5 5 0 0 0 .4-10 7 7 0 0 0-13.2 2.2A4 4 0 0 0 9.5 23z" fill="#0066cc" stroke="#fff" stroke-width="1.6"/><path d="M12 26l-1 3M17 26l-1 3M22 26l-1 3" stroke="#0066cc" stroke-width="1.8" stroke-linecap="round"/></svg></div><p><b>单色</b> Monochrome<br>所有层同一个颜色</p></div>
+      <div class="sample"><div class="paper mini"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="11" cy="10" r="5.2" fill="#0066cc" opacity=".5"/><path d="M9.5 23h13a5 5 0 0 0 .4-10 7 7 0 0 0-13.2 2.2A4 4 0 0 0 9.5 23z" fill="#0066cc" stroke="#fff" stroke-width="1.6"/><path d="M12 26l-1 3M17 26l-1 3M22 26l-1 3" stroke="#0066cc" stroke-width="1.8" stroke-linecap="round" opacity=".3"/></svg></div><p><b>分层</b> Hierarchical<br>同一颜色，按层级变浅</p></div>
+      <div class="sample"><div class="paper mini"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="11" cy="10" r="5.2" fill="#f08c00"/><path d="M9.5 23h13a5 5 0 0 0 .4-10 7 7 0 0 0-13.2 2.2A4 4 0 0 0 9.5 23z" fill="#3c3c43" stroke="#fff" stroke-width="1.6"/><path d="M12 26l-1 3M17 26l-1 3M22 26l-1 3" stroke="#0066cc" stroke-width="1.8" stroke-linecap="round"/></svg></div><p><b>调色板</b> Palette<br>你指定每层的颜色</p></div>
+      <div class="sample"><div class="paper mini"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="11" cy="10" r="5.2" fill="#ffc400"/><path d="M9.5 23h13a5 5 0 0 0 .4-10 7 7 0 0 0-13.2 2.2A4 4 0 0 0 9.5 23z" fill="#c7cbd6" stroke="#fff" stroke-width="1.6"/><path d="M12 26l-1 3M17 26l-1 3M22 26l-1 3" stroke="#2f9bd6" stroke-width="1.8" stroke-linecap="round"/></svg></div><p><b>多色</b> Multicolor<br>符号自带的颜色</p></div>
+    </div>
+    <p class="cite">示意图标是本课自己画的，仿照 HIG 举的 cloud.sun.rain.fill 例子（三层：云、太阳、雨滴），不是 SF Symbols 原图。</p>
+    <div class="prose" style="margin-top:20px">
+      <p>不管用不用 SF Symbols，HIG 都要求：<b>App 里所有图标的尺寸、细节程度、线条粗细和透视角度保持一致</b>。自己画的图标混着用系统图标时最容易出问题：</p>
+    </div>
+    <div class="samples" style="--cols:2">
+      <div class="sample">
+        <div class="cap"><span>四个来源、四种画法</span><span class="verdict no">粗细、虚实都不一样</span></div>
+        <div class="paper"><div class="icon-row">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/></svg>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6" fill="currentColor"/><path d="M15 15l5 5" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/></svg>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1.2 12H6.2z" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8" fill="none" stroke="currentColor" stroke-width="2.6"/></svg>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4.2" fill="currentColor"/><path d="M4 21c.8-4.3 4-6.5 8-6.5s7.2 2.2 8 6.5z" fill="currentColor"/></svg>
+        </div></div>
+      </div>
+      <div class="sample">
+        <div class="cap"><span>同一套规则</span><span class="verdict ok">一样的线宽、圆头、空心</span></div>
+        <div class="paper"><div class="icon-row">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M15 15l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1.2 12H6.2z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4.5 20.5c.9-3.8 3.8-5.8 7.5-5.8s6.6 2 7.5 5.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </div></div>
+      </div>
+    </div>
+    <div class="prose" style="margin-top:20px">
+      <p>另外两条：自定义图标要配一段<b>读屏文字</b>（无障碍描述），让 VoiceOver 能念出它是什么；常见操作用大家熟悉的图标，比如分享就用"方框加向上箭头"。</p>
+    </div>
+  </section>
+
+  <!-- 05 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">05</span>状态：同一个按钮的几种样子</h2>
+      <p>设计稿里的按钮通常只画了一种样子，但真实的按钮至少还有几种状态。HIG 有一条很直接的要求：<b>自定义按钮一定要有按下状态</b>，否则按钮"感觉没反应，让人怀疑它有没有收到操作"。</p>
+      <p>下面是一个真实可点的按钮。按住它看按下的样子，再打开"禁用"和"加载中"：</p>
+    </div>
+    <div class="demo">
+      <div class="demo-controls">
+        <button type="button" data-action="disabled">禁用</button>
+        <button type="button" data-action="loading">加载中</button>
+      </div>
+      <div class="live"><button type="button" class="ui-btn fill state-btn"><span class="spin" aria-hidden="true"></span><span class="l-idle">提交订单</span><span class="l-busy">正在提交…</span></button></div>
+    </div>
+    <div class="gallery">
+      <div class="sample"><div class="paper mini"><span class="ui-btn fill">提交订单</span></div><p><b>默认</b></p></div>
+      <div class="sample"><div class="paper mini"><span class="ui-btn fill pressed">提交订单</span></div><p><b>按下</b><br>手指按住时立刻变化</p></div>
+      <div class="sample"><div class="paper mini"><span class="ui-btn fill disabled">提交订单</span></div><p><b>禁用</b><br>灰掉，且点了没反应</p></div>
+      <div class="sample"><div class="paper mini"><span class="ui-btn fill"><span class="spin2" aria-hidden="true"></span>正在提交…</span></div><p><b>加载中</b><br>转圈 + 换文字</p></div>
+    </div>
+    <div class="prose" style="margin-top:24px">
+      <ul>
+        <li><b>按下</b>：Material 3 的做法是在控件上盖一层"状态层"，用内容色的半透明：悬停 8%、聚焦 10%、按下 10%、拖动 16%。上面的样张就是按这个做的（白字蓝底，按下时盖 10% 的白）。iOS 的系统按钮会自动处理，自定义按钮要自己做。</li>
+        <li><b>禁用</b>：要一眼看出"现在不能点"。第 3 课说过，禁用状态不受 4.5:1 对比度的限制；Material 3 里禁用状态的令牌值是 38% 不透明度。</li>
+        <li><b>加载中</b>：HIG 建议操作不能立刻完成时，<b>在按钮里显示转圈</b>，并且可以换一个文字，比如"结账"变成"正在结账…"。这样既省地方，又说清了在等什么。</li>
+        <li><b>选中、开关</b>：开和关的区别要明显。HIG 说可以加减填充色、显示隐藏底板、加对勾或圆点，<b>不要只靠颜色区分</b>（第 3 课讲过色觉缺陷）。iOS 的开关（Switch）只放在列表行里用。</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 06 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">06</span>输入框：标签不能只写在框里</h2>
+      <p>很多设计稿为了简洁，把"手机号"、"邮箱"这类说明写成输入框里的灰色占位文字。问题是：<b>一开始输入，占位文字就消失了</b>。HIG 的说法是，因为占位文字会消失，最好在框外另加一个标签。</p>
+      <p>NN/g 专门研究过这个问题，结论是用占位文字代替标签"往往弊大于利"。几个主要原因：填到一半被打断，回来就忘了这一栏要填什么；提交前没法检查每栏填得对不对；出错时不知道是哪一栏；灰色占位文字对比度低；用户还可能误以为它是已经填好的默认值，直接跳过。</p>
+    </div>
+    <div class="samples" style="--cols:2">
+      <div class="sample">
+        <div class="cap"><span>只有占位文字（填了一半）</span><span class="verdict no">第二栏是什么？</span></div>
+        <div class="paper form">
+          <div class="f"><input type="text" value="林小满" aria-label="姓名" placeholder="姓名"></div>
+          <div class="f"><input type="text" value="1380013800" aria-label="手机号" placeholder="手机号"></div>
+          <div class="f"><input type="text" value="" aria-label="邮箱" placeholder="邮箱"></div>
+        </div>
+      </div>
+      <div class="sample">
+        <div class="cap"><span>标签在框外，提示紧贴出错处</span><span class="verdict ok">随时知道每栏是什么</span></div>
+        <div class="paper form">
+          <div class="f"><label for="n2">姓名</label><input id="n2" type="text" value="林小满"></div>
+          <div class="f"><label for="p2">手机号</label><input id="p2" class="err" type="text" value="1380013800" aria-describedby="p2m"><div class="msg" id="p2m"><svg width="14" height="14" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="#d70015"/><path d="M10 5.5v6M10 14v.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>手机号是 11 位，这里只有 10 位</div></div>
+          <div class="f"><label for="e2">邮箱（选填）</label><input id="e2" type="text" value="" placeholder="例如 name@example.com"></div>
+        </div>
+      </div>
+    </div>
+    <div class="prose" style="margin-top:24px">
+      <p>占位文字可以留着，但只用来<b>补充</b>，比如给一个格式示例，不能代替标签。另外两条：</p>
+      <ul>
+        <li><b>什么时候校验</b>：HIG 举的例子是，邮箱在用户离开这一栏时再校验；设置用户名、密码时，要在离开这一栏之前就给反馈。NN/g 也提醒："太早报错是一种有敌意的做法"，比如用户刚输入第一个字就标红。</li>
+        <li><b>弹对的键盘</b>：HIG 要求按内容弹出合适的键盘，比如输手机号就弹数字键盘。SwiftUI 用 <code>.keyboardType(.phonePad)</code>，网页用 <code>inputmode="tel"</code>。</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 07 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">07</span>没内容、出错了：页面也有状态</h2>
+      <p>组件有状态，整个页面也有：第一次打开时什么都没有（空状态）、请求失败（出错）、正在加载（第 8 课讲）。这些状态最容易在设计稿里缺席。</p>
+      <h3>空状态</h3>
+      <p>NN/g 给了空状态三条准则：<b>说清现在的状态</b>（完全空白会让人怀疑系统坏了，而且加载还没结束时不要先显示"暂无数据"）；<b>顺便教一下</b>这个功能怎么用；<b>给一条直接的路</b>，比如一个按钮让用户马上开始。</p>
+    </div>
+    <div class="samples" style="--cols:2">
+      <div class="sample">
+        <div class="cap"><span>只说"没有"</span><span class="verdict no">然后呢？</span></div>
+        <div class="paper state-card"><p class="faint">暂无数据</p></div>
+      </div>
+      <div class="sample">
+        <div class="cap"><span>状态 + 教用法 + 一条路</span><span class="verdict ok">知道下一步做什么</span></div>
+        <div class="paper state-card">
+          <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.2-7-9.3A3.9 3.9 0 0 1 12 8.3a3.9 3.9 0 0 1 7 2.4C19 15.8 12 20 12 20z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          <p class="h">还没有收藏的商品</p>
+          <p class="d">在商品页点一下 ♡，它就会出现在这里</p>
+          <span class="ui-btn tint sm">去逛逛</span>
+        </div>
+      </div>
+    </div>
+    <div class="prose" style="margin-top:24px">
+      <h3>出错了</h3>
+      <p>NN/g 的错误提示准则可以归成三件事：</p>
+      <ul>
+        <li><b>看得见</b>：放在出错的地方旁边；醒目，但不能只靠颜色（配图标和文字）；严重程度和打扰程度匹配，只有严重错误才用弹窗打断。</li>
+        <li><b>说人话</b>：不用技术术语，错误码只在排查需要时才给；说清具体是什么问题，"发生错误"等于没说；给出解决办法；语气平和，不怪用户。</li>
+        <li><b>少折腾</b>：保留用户已经填的内容，让他改错而不是重来；能预防的错误提前预防。</li>
+      </ul>
+    </div>
+    <div class="samples" style="--cols:2">
+      <div class="sample">
+        <div class="cap"><span>把技术细节扔给用户</span><span class="verdict no">看不懂，也不知道怎么办</span></div>
+        <div class="paper state-card">
+          <p class="h">请求失败</p>
+          <p class="d">Error Domain=NSURLErrorDomain<br><code>Code=-1009</code></p>
+        </div>
+      </div>
+      <div class="sample">
+        <div class="cap"><span>说清问题，给出办法</span><span class="verdict ok">知道是网络问题，能重试</span></div>
+        <div class="paper state-card">
+          <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.6 15.9a5 5 0 0 1 6.8 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M4 4l16 16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <p class="h">网络好像断开了</p>
+          <p class="d">检查一下 Wi-Fi 或蜂窝网络，再点重试</p>
+          <span class="ui-btn tint sm">重试</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 08 -->
+  <section class="prose">
+    <h2><span class="num">08</span>本课要点</h2>
+    <ul class="checklist">
+      <li>能用系统组件就用：交互状态、无障碍、深色模式都自带。</li>
+      <li>按钮分主次用样式（实心 → 浅底 → 纯文字），不用大小；醒目按钮一个视图一两个；危险操作不设为主要按钮。</li>
+      <li>三种形状：固定圆角、胶囊（半径 = 高度一半）、同心（内半径 = 外半径 − 内边距）。避免太"捏紧"或太"张开"的拐角。</li>
+      <li>图标风格统一：尺寸、细节、线宽、透视一致；图标字重跟随旁边文字；空心用在工具栏和列表，实心用在标签栏和选中态。</li>
+      <li>每个可点的组件至少想好：默认、按下、禁用、加载中；开关和选中不能只靠颜色。</li>
+      <li>输入框标签放在框外；占位文字只做示例；校验别太早；弹对的键盘。</li>
+      <li>空状态：说清状态、教用法、给一条路。错误提示：在出错处、说人话、给办法、保留输入。</li>
+    </ul>
+  </section>
+
+  <div class="next">
+    <div>
+      <h3>下一课：iOS 页面结构与导航</h3>
+      <p>标签栏、导航栈、弹出层怎么配合；和 Android、网页的差异；液态玻璃该用在哪。</p>
+    </div>
+    <a class="btn-primary" href="../07-navigation/index.html">继续 →</a>
+  </div>
+
+  <footer class="refs">
+    <h2>参考资料</h2>
+    <ul>
+      <li><a href="https://developer.apple.com/design/human-interface-guidelines/buttons" target="_blank" rel="noopener">Apple HIG · Buttons</a> · <a href="https://developer.apple.com/design/human-interface-guidelines/toggles" target="_blank" rel="noopener">Toggles</a> · <a href="https://developer.apple.com/design/human-interface-guidelines/text-fields" target="_blank" rel="noopener">Text fields</a></li>
+      <li><a href="https://developer.apple.com/design/human-interface-guidelines/sf-symbols" target="_blank" rel="noopener">Apple HIG · SF Symbols</a> · <a href="https://developer.apple.com/design/human-interface-guidelines/icons" target="_blank" rel="noopener">Icons</a></li>
+      <li><a href="https://developer.apple.com/videos/play/wwdc2025/356/" target="_blank" rel="noopener">WWDC25 · Get to know the new design system</a>（三种形状、同心）</li>
+      <li><a href="https://developer.apple.com/documentation/swiftui/concentricrectangle" target="_blank" rel="noopener">SwiftUI · ConcentricRectangle</a> · <a href="https://developer.apple.com/documentation/swiftui/primitivebuttonstyle" target="_blank" rel="noopener">PrimitiveButtonStyle</a></li>
+      <li><a href="https://github.com/material-components/material-web/blob/main/tokens/versions/latest/sass/_md-sys-state.scss" target="_blank" rel="noopener">Material 3 状态层令牌（md.sys.state）</a></li>
+      <li><a href="https://www.nngroup.com/articles/form-design-placeholders/" target="_blank" rel="noopener">NN/g · Placeholders in Form Fields Are Harmful</a></li>
+      <li><a href="https://www.nngroup.com/articles/error-message-guidelines/" target="_blank" rel="noopener">NN/g · Error-Message Guidelines</a> · <a href="https://www.nngroup.com/articles/empty-state-interface-design/" target="_blank" rel="noopener">Designing Empty States</a></li>
+    </ul>
+  </footer>
+
+</main>
+<script src="../../assets/lesson.js"></script>
+<script>
+  // 03 同心圆角：外圆角固定 32，按配法算内圆角
+  (function () {
+    const OUTER = 32;
+    const outer = document.getElementById("outer"), inner = document.getElementById("inner");
+    const pad = document.getElementById("pad"), padv = document.getElementById("padv"), out = document.getElementById("conc-readout");
+    const btns = document.querySelectorAll("#conc-modes button");
+    let mode = "concentric";
+    function innerRadius(p) {
+      if (mode === "same") return OUTER;
+      if (mode === "small") return 4;
+      return Math.max(OUTER - p, 0);
+    }
+    function apply() {
+      const p = +pad.value, r = innerRadius(p);
+      outer.style.padding = p + "px";
+      inner.style.borderRadius = r + "px";
+      padv.textContent = p + "px";
+      out.textContent = `外圆角 ${OUTER} · 内边距 ${p} · 内圆角 ${r}` + (mode === "concentric" ? "（= 32 − " + p + "）" : "");
+    }
+    btns.forEach((b) => b.addEventListener("click", () => {
+      mode = b.dataset.mode;
+      btns.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+      apply();
+    }));
+    pad.addEventListener("input", apply);
+    apply();
+  })();
+
+  // 05 禁用时真的点不了
+  (function () {
+    const btn = document.querySelector(".state-btn");
+    const demo = btn.closest(".demo");
+    new MutationObserver(() => {
+      btn.disabled = demo.classList.contains("is-disabled");
+      btn.setAttribute("aria-busy", String(demo.classList.contains("is-loading")));
+    }).observe(demo, { attributes: true, attributeFilter: ["class"] });
+  })();
+</script>
+</body>
+</html>
