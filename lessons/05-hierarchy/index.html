@@ -1,0 +1,594 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 5 课 · 视觉层级</title>
+<link rel="stylesheet" href="../../assets/lesson.css">
+<style>
+  /* ======== 手机示例：通用骨架 ======== */
+  .od .nav { height: 44px; flex: none; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 0 16px; }
+  .od .nav .more { justify-self: end; }
+  .od .content { flex: 1; overflow: hidden; padding: 4px 16px 16px; display: flex; flex-direction: column; gap: 12px; }
+  .od .status { padding: 12px 4px 8px; }
+  .od .bar { height: 4px; border-radius: 2px; margin-top: 14px; overflow: hidden; }
+  .od .bar i { display: block; height: 100%; width: 72%; border-radius: 2px; }
+  .od .card { background: #fff; border-radius: 14px; padding: 14px 16px; }
+  .od .product { display: flex; align-items: center; gap: 12px; }
+  .od .thumb { width: 52px; height: 52px; border-radius: 10px; background: linear-gradient(135deg, #f4f4f6, #dcdce1); flex: none; }
+  .od .pinfo { flex: 1; min-width: 0; }
+  .od .row { display: flex; justify-content: space-between; align-items: baseline; padding: 5px 0; }
+  .od .row.total { border-top: 0.5px solid rgba(60,60,67,.29); margin-top: 6px; padding-top: 11px; }
+  .od .bottombar { flex: none; background: #fff; padding: 10px 16px 34px; display: flex; gap: 10px; }
+  .od .bottombar button { flex: 1; border: 0; font-family: inherit; }
+
+  /* ======== 版本 A：常见的"研发手搓"写法 ======== */
+  #mA .screen { background: #e53935; }
+  #mA .screen-body { background: #f2f2f7; }
+  #mA .nav { background: #e53935; color: #fff; }
+  #mA .nav .back, #mA .nav .more { font-size: 16px; font-weight: 700; }
+  #mA .nav .title { font-size: 20px; font-weight: 700; }
+  #mA .st { font-size: 16px; font-weight: 700; color: #000; }
+  #mA .eta { font-size: 15px; font-weight: 700; color: #f57c00; margin-top: 2px; }
+  #mA .bar { background: #ffe0b2; }
+  #mA .bar i { background: #f57c00; }
+  #mA .pname { font-size: 16px; font-weight: 700; color: #1e88e5; }
+  #mA .pspec { font-size: 14px; font-weight: 700; color: #000; margin-top: 2px; }
+  #mA .pprice { font-size: 18px; font-weight: 700; color: #e53935; }
+  #mA .who { font-size: 15px; font-weight: 700; color: #000; }
+  #mA .where { font-size: 15px; font-weight: 700; color: #333; margin-top: 2px; }
+  #mA .k { font-size: 15px; font-weight: 700; color: #000; }
+  #mA .v { font-size: 15px; font-weight: 700; color: #e53935; }
+  #mA .v.coupon { color: #43a047; }
+  #mA .total .k, #mA .total .v { font-size: 16px; }
+  #mA .info .k, #mA .info .v { font-size: 14px; }
+  #mA .info .v { color: #666; }
+  #mA .bottombar button { height: 44px; border-radius: 8px; color: #fff; font-size: 15px; font-weight: 700; }
+  #mA .b-cancel { background: #e53935; }
+  #mA .b-cs { background: #1e88e5; }
+  #mA .b-ok { background: #43a047; }
+
+  /* ======== 版本 B：同样的内容，重排层级 ======== */
+  #mB .nav { color: #000; }
+  #mB .nav .back { font-size: 17px; color: #0066cc; }
+  #mB .nav .title { font-size: 17px; font-weight: 600; }
+  #mB .nav .more { font-size: 17px; color: #0066cc; letter-spacing: 1px; }
+  #mB .st { font-size: 28px; font-weight: 700; color: #000; line-height: 1.2; }
+  #mB .eta { font-size: 15px; color: #6e6e73; margin-top: 4px; }
+  #mB .bar { background: #e5e5ea; }
+  #mB .bar i { background: #0066cc; }
+  #mB .pname { font-size: 17px; color: #000; }
+  #mB .pspec { font-size: 15px; color: #6e6e73; margin-top: 2px; }
+  #mB .pprice { font-size: 17px; color: #000; }
+  #mB .who { font-size: 17px; color: #000; }
+  #mB .where { font-size: 15px; color: #6e6e73; margin-top: 2px; }
+  #mB .k { font-size: 15px; color: #6e6e73; }
+  #mB .v { font-size: 15px; color: #000; font-variant-numeric: tabular-nums; }
+  #mB .total .k { color: #000; }
+  #mB .total .v { font-size: 20px; font-weight: 600; }
+  #mB .bottombar { border-top: 0.5px solid rgba(60,60,67,.29); }
+  #mB .bottombar button { height: 50px; border-radius: 25px; font-size: 17px; font-weight: 600; }
+  #mB .b-cs { background: rgba(118,118,128,.12); color: #000; }
+  #mB .b-ok { background: #0066cc; color: #fff; }
+
+  /* ======== 网页示例：通用骨架 ======== */
+  .dash { padding: 28px 32px 32px; background: #fff; }
+  .dash .ph { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; margin-bottom: 24px; }
+  .dash .acts { display: flex; gap: 8px; }
+  .dash .acts button { font-family: inherit; cursor: default; }
+  .dash .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+  .dash .kpi { border-radius: 12px; padding: 16px 18px; }
+  .dash table { width: 100%; border-collapse: collapse; }
+  .dash th, .dash td { text-align: left; padding: 10px 12px; }
+  .dash .tt { margin-bottom: 10px; }
+
+  /* 版本 A */
+  #wA .pt { font-size: 18px; font-weight: 700; color: #333; }
+  #wA .ps { font-size: 16px; font-weight: 700; color: #1e88e5; margin-top: 4px; }
+  #wA .acts button { border: 0; border-radius: 6px; padding: 8px 14px; color: #fff; font-size: 14px; font-weight: 700; }
+  #wA .kpi { color: #fff; }
+  #wA .kpi:nth-child(1) { background: #2196f3; }
+  #wA .kpi:nth-child(2) { background: #ff9800; }
+  #wA .kpi:nth-child(3) { background: #4caf50; }
+  #wA .kpi:nth-child(4) { background: #9c27b0; }
+  #wA .kl { font-size: 18px; font-weight: 700; }
+  #wA .kv { font-size: 18px; margin: 6px 0; }
+  #wA .kd { font-size: 16px; font-weight: 700; color: #ffeb3b; }
+  #wA .tt { font-size: 18px; font-weight: 700; color: #333; }
+  #wA th { background: #455a64; color: #fff; font-size: 14px; font-weight: 700; }
+  #wA td { font-size: 14px; font-weight: 700; color: #333; border-bottom: 1px solid #ddd; }
+  #wA td.id { color: #1e88e5; }
+  #wA td.amt { color: #e53935; }
+  #wA .s-ok { color: #4caf50; } #wA .s-wait { color: #ff9800; } #wA .s-back { color: #f44336; }
+
+  /* 版本 B */
+  #wB .pt { font-size: 24px; font-weight: 600; color: #111827; line-height: 1.3; }
+  #wB .ps { font-size: 14px; color: #6b7280; margin-top: 4px; }
+  #wB .acts button { border-radius: 8px; padding: 8px 14px; font-size: 14px; font-weight: 500; }
+  #wB .b-sec { background: #fff; border: 1px solid #d1d5db; color: #111827; }
+  #wB .b-pri { background: #2563eb; border: 1px solid #2563eb; color: #fff; }
+  #wB .kpi { border: 1px solid #e5e7eb; }
+  #wB .kl { font-size: 13px; color: #6b7280; }
+  #wB .kv { font-size: 28px; font-weight: 600; color: #111827; margin: 4px 0 6px; line-height: 1.25; font-variant-numeric: tabular-nums; }
+  #wB .kd { font-size: 13px; font-weight: 500; }
+  #wB .kd .cmp { color: #6b7280; font-weight: 400; margin-left: 4px; }
+  #wB .good { color: #15803d; } #wB .bad { color: #b91c1c; }
+  #wB .tt { font-size: 16px; font-weight: 600; color: #111827; }
+  #wB th { font-size: 13px; font-weight: 500; color: #6b7280; border-bottom: 1px solid #e5e7eb; }
+  #wB td { font-size: 14px; color: #111827; border-bottom: 1px solid #f3f4f6; font-variant-numeric: tabular-nums; }
+  #wB td.id { color: #6b7280; }
+  #wB .r { text-align: right; }
+  #wB .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 7px; vertical-align: 1px; }
+  #wB .d-ok { background: #22c55e; } #wB .d-wait { background: #f59e0b; } #wB .d-back { background: #9ca3af; }
+
+  /* ======== 第 3 节：四个工具 ======== */
+  .tools { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-top: 24px; }
+  .tool { display: flex; flex-direction: column; }
+  .tool .tname { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+  .tool .sample {
+    height: 104px; border-radius: 12px; background: #fff; border: 1px solid var(--line);
+    padding: 14px; display: flex; align-items: center; justify-content: space-between;
+    font-family: -apple-system, "SF Pro Text", "PingFang SC", sans-serif; color: #000; font-size: 15px;
+  }
+  .tool .sample.col { flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; }
+  .tool p { font-size: 14px; line-height: 1.65; color: var(--text-2); margin: 10px 0 0; }
+  .tool .sample span { white-space: nowrap; }
+  .tool .sample .big { font-size: 26px; }
+
+  /* ======== 第 6 节：标签 vs 值 ======== */
+  .duo { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin-top: 24px; }
+  .mini { background: #f2f2f7; border-radius: 16px; padding: 16px; font-family: -apple-system, "SF Pro Text", "PingFang SC", sans-serif; }
+  .mini .cap { font-size: 13px; color: #6e6e73; margin: 0 4px 8px; }
+  .mini .list { background: #fff; border-radius: 12px; padding: 0 16px; }
+  .mini .li { display: flex; justify-content: space-between; align-items: center; min-height: 46px; border-bottom: 0.5px solid rgba(60,60,67,.29); gap: 12px; }
+  .mini .li:last-child { border-bottom: 0; }
+  .mini.settings .k { font-size: 17px; color: #000; }
+  .mini.settings .v { font-size: 17px; color: #6e6e73; }
+  .mini.settings .v::after { content: "›"; margin-left: 8px; color: #b8b8bd; font-size: 20px; }
+  .mini.order .k { font-size: 15px; color: #6e6e73; }
+  .mini.order .v { font-size: 15px; color: #000; font-variant-numeric: tabular-nums; }
+  .duo .why { font-size: 14px; color: var(--text-2); margin: 10px 4px 0; line-height: 1.65; }
+
+  .checklist { list-style: none; padding: 0; margin: 20px 0 0; }
+  .checklist li { position: relative; padding: 12px 0 12px 34px; border-bottom: 1px solid var(--line); }
+  .checklist li:last-child { border-bottom: 0; }
+  .checklist li::before {
+    content: ""; position: absolute; left: 6px; top: 23px; width: 7px; height: 7px;
+    border-radius: 50%; background: var(--accent);
+  }
+  .checklist small { display: block; color: var(--text-3); font-size: 13px; }
+
+  @media (max-width: 860px) {
+    .tools { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .tool.base { grid-column: span 2; }
+    .duo { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 600px) {
+    .tool .sample { padding: 12px; }
+    .tool .sample .big { font-size: 21px; }
+  }
+</style>
+</head>
+<body>
+<main class="page">
+
+  <nav class="crumb"><a href="../../index.html">← 课程目录</a></nav>
+
+  <header class="prose">
+    <p class="eyebrow">第 5 课 / 共 9 课</p>
+    <h1>视觉层级：一眼先看到什么</h1>
+    <p class="lead">前几课分别讲了文字、颜色和间距。这一课讲怎么把它们组合起来，决定用户先看什么、后看什么。</p>
+    <p class="meta">约 20 分钟 · 纯讲解 · 2 组对照示例</p>
+  </header>
+
+  <!-- 1 -->
+  <section class="prose">
+    <h2><span class="num">01</span>一句话定义</h2>
+    <p>用户不会逐字读界面，只会<b>扫</b>。视觉层级就是你替用户排好的扫视顺序：第一眼看什么，第二眼看什么，什么最后才看。</p>
+    <p>层级好的界面，扫视顺序和用户要做的事一致。层级差的界面有两种：到处都在喊，或者什么都不突出。</p>
+    <div class="callout">
+      <p>拿日志级别来类比：如果每条日志都打成 ERROR，就等于没有 ERROR。界面也一样，<b>每个字都加粗，就等于没有加粗</b>。</p>
+    </div>
+    <h3>30 秒判断法</h3>
+    <ol class="steps">
+      <li><b>眯眼看</b>（或者把截图模糊一下）：细节看不清以后，最先跳出来的是什么？</li>
+      <li>问自己：它是不是这个页面<b>最重要</b>的信息或操作？</li>
+      <li>再看第二眼、第三眼：顺序对不对？有没有不重要的东西在抢眼？</li>
+    </ol>
+  </section>
+
+  <!-- 2 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">02</span>对照：同一个订单详情页</h2>
+      <p>第 1 课见过这两个版本。它们的内容和布局基本一样，主要差在<b>字号、字重、颜色和按钮样式</b>。每一处差别都已经标出来了，数字和下面的说明一一对应。</p><p>另外两个按钮可以点开看看："眯眼测试"把界面模糊掉，模拟扫一眼的效果；"度量"把两版的数据列出来对比。</p>
+    </div>
+
+    <div class="demo is-anno">
+      <div class="demo-controls">
+        <button type="button" data-action="squint">眯眼测试</button>
+        <button type="button" data-action="anno">显示标注</button>
+        <button type="button" data-action="metrics">度量</button>
+      </div>
+      <p class="squint-hint">模糊之后：A 里最先跳出来的是顶部红色标题栏和底部三个彩色按钮，"运输中"淹没在一片同样粗的文字里；B 里先看到"运输中"，然后是蓝色按钮和实付金额。</p>
+
+      <div class="pair">
+        <!-- 版本 A -->
+        <div class="frame" id="mA" data-version="版本 A" data-kind="bad">
+          <div class="frame-tag">版本 A</div>
+          <div class="device"><div class="screen">
+            <div class="statusbar light" data-ignore><span>9:41</span><span class="island"></span><span class="icons"></span></div>
+            <div class="screen-body od">
+              <div class="nav" data-anno="1" data-anno-pos="end">
+                <span class="back">‹ 订单</span><span class="title">订单详情</span><span class="more">···</span>
+              </div>
+              <div class="content">
+                <div class="status">
+                  <div class="st"><span data-anno="2">运输中</span></div>
+                  <div class="eta">预计 11 月 8 日（周日）送达</div>
+                  <div class="bar"><i></i></div>
+                </div>
+                <div class="card product">
+                  <div class="thumb"></div>
+                  <div class="pinfo"><div class="pname"><span data-anno="4" data-anno-pos="left">AirPods Pro（第 2 代）</span></div><div class="pspec">白色 · ×1</div></div>
+                  <div class="pprice">¥1,899</div>
+                </div>
+                <div class="card">
+                  <div class="who">张三　138****5678</div>
+                  <div class="where">上海市浦东新区世纪大道 100 号</div>
+                </div>
+                <div class="card">
+                  <div class="row"><span class="k" data-anno="3">商品金额</span><span class="v">¥1,899.00</span></div>
+                  <div class="row"><span class="k">运费</span><span class="v">¥0.00</span></div>
+                  <div class="row"><span class="k">优惠券</span><span class="v coupon">−¥100.00</span></div>
+                  <div class="row total"><span class="k">实付</span><span class="v">¥1,799.00</span></div>
+                </div>
+                <div class="card info">
+                  <div class="row"><span class="k">订单编号</span><span class="v">2026110621345678</span></div>
+                  <div class="row"><span class="k">下单时间</span><span class="v">2026-11-06 21:34</span></div>
+                </div>
+              </div>
+              <div class="bottombar" data-anno="5" data-anno-pos="edge">
+                <button type="button" class="b-cancel">取消订单</button>
+                <button type="button" class="b-cs">联系客服</button>
+                <button type="button" class="b-ok">确认收货</button>
+              </div>
+            </div>
+            <div class="home-indicator" data-ignore></div>
+          </div></div>
+          <ol class="notes">
+            <li data-n="1">第一眼被<b>红色标题栏</b>抢走了，可它只写了页面名字，没有任何信息量。</li>
+            <li data-n="2">最关键的"运输中"和普通文字一样大，眯眼以后完全找不到。</li>
+            <li data-n="3"><b>每个字都加粗</b>，标签和数值一样粗、一样黑，眼睛只能一个个读过去。</li>
+            <li data-n="4">蓝、红、橙、绿同时出现，彩色就不再代表"重要"或者"能点"了。</li>
+            <li data-n="5">三个按钮一样醒目，用户得停下来想该点哪个。红色的"取消订单"反而最扎眼，容易误点。</li>
+          </ol>
+        </div>
+
+        <!-- 版本 B -->
+        <div class="frame" id="mB" data-version="版本 B" data-kind="good">
+          <div class="frame-tag">版本 B</div>
+          <div class="device"><div class="screen">
+            <div class="statusbar" data-ignore><span>9:41</span><span class="island"></span><span class="icons"></span></div>
+            <div class="screen-body od">
+              <div class="nav">
+                <span class="back">‹ 订单</span><span class="title">订单详情</span><span class="more" data-anno="5" data-anno-pos="left">•••</span>
+              </div>
+              <div class="content">
+                <div class="status">
+                  <div class="st"><span data-anno="1">运输中</span></div>
+                  <div class="eta">预计 11 月 8 日（周日）送达</div>
+                  <div class="bar"><i></i></div>
+                </div>
+                <div class="card product">
+                  <div class="thumb"></div>
+                  <div class="pinfo"><div class="pname">AirPods Pro（第 2 代）</div><div class="pspec">白色 · ×1</div></div>
+                  <div class="pprice">¥1,899</div>
+                </div>
+                <div class="card">
+                  <div class="who">张三　138****5678</div>
+                  <div class="where">上海市浦东新区世纪大道 100 号</div>
+                </div>
+                <div class="card">
+                  <div class="row"><span class="k" data-anno="4">商品金额</span><span class="v">¥1,899.00</span></div>
+                  <div class="row"><span class="k">运费</span><span class="v">¥0.00</span></div>
+                  <div class="row"><span class="k">优惠券</span><span class="v">−¥100.00</span></div>
+                  <div class="row total"><span class="k">实付</span><span class="v" data-anno="2" data-anno-pos="left">¥1,799.00</span></div>
+                </div>
+                <div class="card info">
+                  <div class="row"><span class="k">订单编号</span><span class="v">2026110621345678</span></div>
+                  <div class="row"><span class="k">下单时间</span><span class="v">2026-11-06 21:34</span></div>
+                </div>
+              </div>
+              <div class="bottombar">
+                <button type="button" class="b-cs">联系客服</button>
+                <button type="button" class="b-ok" data-anno="3" data-anno-pos="corner">确认收货</button>
+              </div>
+            </div>
+            <div class="home-indicator" data-ignore></div>
+          </div></div>
+          <ol class="notes">
+            <li data-n="1"><b>第一眼</b>："运输中"，28pt 粗体。用户点开订单，最想知道的就是货到哪了。</li>
+            <li data-n="2"><b>第二眼</b>：实付金额，20pt 半粗，是金额区唯一加粗的数字。</li>
+            <li data-n="3"><b>第三眼</b>：唯一的实心按钮"确认收货"。"联系客服"用灰色次级按钮，两个按钮一样大，只靠样式区分主次。</li>
+            <li data-n="4">其余信息靠<b>弱化</b>拉开层级：标签用灰色退后，数值用主文字色，全屏只用了 4 种字号。</li>
+            <li data-n="5">不常用、而且有风险的"取消订单"收进了右上角的"•••"菜单，不和主操作抢位置。</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="metrics"></div>
+    </div>
+
+    <div class="prose">
+      <div class="callout">
+        <p><b>一个细节</b>：B 版的次要文字没用 iOS 默认的灰色，按钮也没用默认的系统蓝。按无障碍标准（WCAG）的公式算，默认次要灰在白底上的对比度只有 3.44:1，系统蓝上的白字是 4.02:1，都没达到小字要求的 4.5:1。所以 B 版换成了稍深一点的 <code>#6E6E73</code> 和 <code>#0066CC</code>。对比度怎么算，第 3 课（颜色）讲过。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">03</span>层级的 4 个工具</h2>
+      <p>拉开层级只有这几种手段。下面每一格都只改了一个变量，从同一个起点出发：</p>
+    </div>
+    <div class="tools">
+      <div class="tool base">
+        <div class="tname">起点：没有层级</div>
+        <div class="sample"><span>实付</span><span>¥1,799.00</span></div>
+        <p>标签和数值一样大、一样黑，眼睛分不出主次。</p>
+      </div>
+      <div class="tool">
+        <div class="tname">① 尺寸</div>
+        <div class="sample"><span>实付</span><span class="big">¥1,799.00</span></div>
+        <p>效果最强。字号种类要少，主次差距要拉开：14 和 15 没人分得出来。</p>
+      </div>
+      <div class="tool">
+        <div class="tname">② 字重</div>
+        <div class="sample"><span>实付</span><span style="font-weight:600">¥1,799.00</span></div>
+        <p>最多 2～3 种：常规做正文，半粗做强调，粗体留给大标题。</p>
+      </div>
+      <div class="tool">
+        <div class="tname">③ 颜色深浅</div>
+        <div class="sample"><span style="color:#6e6e73">实付</span><span>¥1,799.00</span></div>
+        <p>文字分 3 级灰。把次要的调灰，往往比把重要的加粗更干净。</p>
+      </div>
+      <div class="tool">
+        <div class="tname">④ 位置与留白</div>
+        <div class="sample col"><span style="font-size:13px;color:#6e6e73">实付</span><span>¥1,799.00</span></div>
+        <p>越靠上、越靠左、周围越空，越先被看到。</p>
+      </div>
+    </div>
+    <div class="prose">
+      <div class="callout">
+        <p><b>本课最重要的一句</b>：想突出一样东西，先想<b>能弱化什么</b>，而不是给它加粗、加大、加颜色。A 版的问题不是"不够突出"，而是<b>所有东西都在争着突出</b>。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">04</span>五条规则，每条都能检查</h2>
+    </div>
+    <div class="rules">
+      <div class="rule">
+        <div class="rn">1</div>
+        <h3>一屏只有一个"第一眼"</h3>
+        <p>先想清楚这个页面最重要的一件事是什么，把最强的视觉权重给它，而且只给它。</p>
+        <p class="measure"><b>怎么查</b>：眯眼测试。模糊之后，最先跳出来的是不是它？</p>
+        <p class="src">出处：<a href="https://www.nngroup.com/articles/visual-hierarchy-ux-definition/" target="_blank" rel="noopener">NN/g · Visual Hierarchy in UX</a></p>
+      </div>
+      <div class="rule">
+        <div class="rn">2</div>
+        <h3>先弱化，再强调</h3>
+        <p>次要信息变小、变灰；加粗和彩色要保持稀缺，才有强调作用。</p>
+        <p class="measure"><b>怎么查</b>：数一数加粗文字和彩色文字，是不是少数？</p>
+        <p class="src">出处：<a href="https://www.refactoringui.com/" target="_blank" rel="noopener">Refactoring UI</a>（"Emphasize by de-emphasizing" 一节）</p>
+      </div>
+      <div class="rule">
+        <div class="rn">3</div>
+        <h3>字号少，而且差距分明</h3>
+        <p>iOS 的默认字号表本身就是一套现成的层级：大标题 34、标题 28 / 22 / 20、正文 17、次要文字 15、脚注 13。直接从里面挑，不要自创 16、18、19。</p>
+        <p class="measure"><b>怎么查</b>：一屏不超过 5 种字号；最大的字至少是正文的 1.5 倍（经验值）。</p>
+        <p class="src">出处：<a href="https://developer.apple.com/design/human-interface-guidelines/typography" target="_blank" rel="noopener">Apple HIG · Typography</a></p>
+      </div>
+      <div class="rule">
+        <div class="rn">4</div>
+        <h3>一组按钮只有一个主角</h3>
+        <p>首选操作用醒目样式，其余用次级样式，靠<b>样式</b>而不是尺寸来区分。危险操作和不常用的操作往后放，不要因为"危险"就做成大红按钮。</p>
+        <p class="measure"><b>怎么查</b>：一个视图里实心醒目按钮不超过 1～2 个，同一组里只有 1 个。</p>
+        <p class="src">出处：<a href="https://developer.apple.com/design/human-interface-guidelines/buttons" target="_blank" rel="noopener">Apple HIG · Buttons</a>（"Use style — not size…"，"keeping the number of visually prominent buttons to one or two per view"）· Refactoring UI（"Semantics are secondary"）</p>
+      </div>
+      <div class="rule">
+        <div class="rn">5</div>
+        <h3>用户在找什么，什么就最强</h3>
+        <p>标签和值哪个该强，没有固定答案，要看用户此刻在找什么（见第 06 节）。</p>
+        <p class="measure"><b>怎么查</b>：说出这个页面用户最常做的那件事，看看视觉权重是不是落在它上面。</p>
+        <p class="src">出处：Refactoring UI（"Labels are a last resort" 一节）</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">05</span>换到网页上：后台看板</h2>
+      <p>同样的规则放到网页上也成立。这是一个常见的后台首页，差别同样都标出来了。点开"度量"会看到一个反直觉的现象：<b>A 版的字号种类反而更少</b>，原因见下方。</p>
+    </div>
+
+    <div class="demo is-anno">
+      <div class="demo-controls">
+        <button type="button" data-action="squint">眯眼测试</button>
+        <button type="button" data-action="anno">显示标注</button>
+        <button type="button" data-action="metrics">度量</button>
+      </div>
+      <p class="squint-hint">模糊之后：A 里四块彩色卡片和一排彩色按钮一样抢眼，分不出先后；B 里先看到四个大数字，然后是右上角的蓝色按钮。</p>
+
+      <div class="stack">
+        <!-- 版本 A -->
+        <div class="frame" id="wA" data-version="版本 A" data-kind="bad">
+          <div class="frame-tag">版本 A</div>
+          <div class="browser">
+            <div class="browser-bar" data-ignore><i></i><i></i><i></i><span class="url">admin.example.com/overview</span></div>
+            <div class="browser-scroll"><div class="browser-body dash">
+              <div class="ph">
+                <div><div class="pt"><span data-anno="1">概览</span></div><div class="ps">最近 30 天数据　更新时间：10:24</div></div>
+                <div class="acts" data-anno="4" data-anno-pos="left">
+                  <button type="button" style="background:#4caf50">刷新</button>
+                  <button type="button" style="background:#ff9800">筛选</button>
+                  <button type="button" style="background:#9c27b0">设置</button>
+                  <button type="button" style="background:#2196f3">导出报表</button>
+                </div>
+              </div>
+              <div class="kpis" data-anno="2" data-anno-pos="edge">
+                <div class="kpi"><div class="kl">总收入：</div><div class="kv"><span data-anno="3">¥128,430</span></div><div class="kd">+12.5%</div></div>
+                <div class="kpi"><div class="kl">订单数：</div><div class="kv">3,284</div><div class="kd">+4.1%</div></div>
+                <div class="kpi"><div class="kl">客单价：</div><div class="kv">¥39.11</div><div class="kd">-2.3%</div></div>
+                <div class="kpi"><div class="kl">退款率：</div><div class="kv">1.8%</div><div class="kd">+0.3%</div></div>
+              </div>
+              <div class="tt">最近订单</div>
+              <table>
+                <thead data-anno="5" data-anno-pos="edge"><tr><th>订单号</th><th>客户</th><th>状态</th><th>金额</th></tr></thead>
+                <tbody>
+                  <tr><td class="id">#20261106-0421</td><td>李雷</td><td class="s-ok">已完成</td><td class="amt">¥1,299.00</td></tr>
+                  <tr><td class="id">#20261106-0418</td><td>韩梅梅</td><td class="s-wait">处理中</td><td class="amt">¥86.50</td></tr>
+                  <tr><td class="id">#20261106-0402</td><td>王芳</td><td class="s-back">已退款</td><td class="amt">¥240.00</td></tr>
+                </tbody>
+              </table>
+            </div></div>
+          </div>
+          <ol class="notes">
+            <li data-n="1">页面标题和卡片标签一样大（都是 18px），页面没有一个明确的"入口"。</li>
+            <li data-n="2">四张卡片四种底色。颜色在这里只是装饰，却会让人以为它有含义（橙色是警告吗？）。</li>
+            <li data-n="3">用户真正要看的数值，和标签一样大，字重还更细，主次颠倒了。</li>
+            <li data-n="4">四个实心彩色按钮并排，真正的主操作"导出报表"被淹没了。</li>
+            <li data-n="5">表头深底白字，是整张表最重的部分；内容又全部加粗。全加粗就等于没加粗。</li>
+          </ol>
+        </div>
+
+        <!-- 版本 B -->
+        <div class="frame" id="wB" data-version="版本 B" data-kind="good">
+          <div class="frame-tag">版本 B</div>
+          <div class="browser">
+            <div class="browser-bar" data-ignore><i></i><i></i><i></i><span class="url">admin.example.com/overview</span></div>
+            <div class="browser-scroll"><div class="browser-body dash">
+              <div class="ph">
+                <div><div class="pt">概览</div><div class="ps">最近 30 天 · 更新于 10:24</div></div>
+                <div class="acts" data-anno="4" data-anno-pos="left">
+                  <button type="button" class="b-sec">筛选</button>
+                  <button type="button" class="b-pri">导出报表</button>
+                </div>
+              </div>
+              <div class="kpis">
+                <div class="kpi"><div class="kl"><span data-anno="2">总收入</span></div><div class="kv"><span data-anno="1">¥128,430</span></div><div class="kd good">↑ 12.5%<span class="cmp">较上月</span></div></div>
+                <div class="kpi"><div class="kl">订单数</div><div class="kv">3,284</div><div class="kd good">↑ 4.1%<span class="cmp">较上月</span></div></div>
+                <div class="kpi"><div class="kl">客单价</div><div class="kv">¥39.11</div><div class="kd bad">↓ 2.3%<span class="cmp">较上月</span></div></div>
+                <div class="kpi"><div class="kl">退款率</div><div class="kv">1.8%</div><div class="kd bad" data-anno="3" data-anno-pos="end">↑ 0.3%<span class="cmp">较上月</span></div></div>
+              </div>
+              <div class="tt">最近订单</div>
+              <table>
+                <thead data-anno="5" data-anno-pos="edge"><tr><th>订单号</th><th>客户</th><th>状态</th><th class="r">金额</th></tr></thead>
+                <tbody>
+                  <tr><td class="id">#20261106-0421</td><td>李雷</td><td><i class="dot d-ok"></i>已完成</td><td class="r">¥1,299.00</td></tr>
+                  <tr><td class="id">#20261106-0418</td><td>韩梅梅</td><td><i class="dot d-wait"></i>处理中</td><td class="r">¥86.50</td></tr>
+                  <tr><td class="id">#20261106-0402</td><td>王芳</td><td><i class="dot d-back"></i>已退款</td><td class="r">¥240.00</td></tr>
+                </tbody>
+              </table>
+            </div></div>
+          </div>
+          <ol class="notes">
+            <li data-n="1">KPI 数值 28px，是整页最大的字，扫一眼就能读完四个数。</li>
+            <li data-n="2">标签 13px、灰色，退到后面。它只在第一次看的时候有用，之后用户只看数字。</li>
+            <li data-n="3">涨跌用小号的语义色。注意颜色表达的是<b>好坏</b>，不是涨跌：退款率上升是坏事，所以标红。</li>
+            <li data-n="4">只有"导出报表"是实心按钮，"筛选"用描边样式。刷新、设置这类不常用的操作，可以收成图标或者放进菜单。</li>
+            <li data-n="5">表头 13px 灰色，内容才是主角。状态用小圆点加文字，不靠大面积彩色。金额右对齐，方便比较大小（第 4 课讲过）。</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="metrics"></div>
+    </div>
+
+    <div class="prose">
+      <div class="callout">
+        <p><b>反直觉的地方</b>：A 版只用了 3 种字号，比 B 版还少，但层级更差，因为 14、16、18 太接近，而且全都加粗。所以单看"字号种类"这一个数是不够的，<b>差距有没有拉开</b>才是关键。度量能帮你发现问题，但每个数字都要放回界面里去理解。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">06</span>规则不是死的：标签强，还是值强？</h2>
+      <p>同样是"左边标签、右边值"的列表，iOS 自己就有两种相反的写法：</p>
+    </div>
+    <div class="duo">
+      <div>
+        <div class="mini settings">
+          <div class="cap">设置页：用户在找入口</div>
+          <div class="list">
+            <div class="li"><span class="k">无线局域网</span><span class="v">家里的网络</span></div>
+            <div class="li"><span class="k">蓝牙</span><span class="v">打开</span></div>
+            <div class="li"><span class="k">个人热点</span><span class="v">关闭</span></div>
+          </div>
+        </div>
+        <p class="why">用户在一排项目里找"我要改哪一个"，所以<b>项目名是主角</b>，当前值退后。</p>
+      </div>
+      <div>
+        <div class="mini order">
+          <div class="cap">订单页：用户在读数据</div>
+          <div class="list">
+            <div class="li"><span class="k">订单编号</span><span class="v">2026110621345678</span></div>
+            <div class="li"><span class="k">下单时间</span><span class="v">2026-11-06 21:34</span></div>
+            <div class="li"><span class="k">支付方式</span><span class="v">Apple Pay</span></div>
+          </div>
+        </div>
+        <p class="why">用户已经知道每一行是什么，要看的是<b>值本身</b>，所以标签退后。</p>
+      </div>
+    </div>
+    <div class="prose">
+      <p style="margin-top:24px">两种写法都对，背后是同一条原则：<b>用户此刻在找什么，什么就最强</b>。评审时如果你说不出"用户此刻在找什么"，那多半是这个页面本身就没想清楚。</p>
+    </div>
+  </section>
+
+  <!-- 7 -->
+  <section class="prose">
+    <h2><span class="num">07</span>本课要点</h2>
+    <p>以后看任何界面，可以先用这几条过一遍。它们也收在项目根目录的 <code>checklist.md</code> 里。</p>
+    <ul class="checklist">
+      <li>眯眼测试：模糊后最先跳出来的，是不是最重要的信息或操作？<small>规则 1</small></li>
+      <li>加粗和彩色文字是少数吗？次要信息有没有退后（变小、变灰）？<small>规则 2</small></li>
+      <li>字号不超过 5 种，主次之间差距明显？<small>规则 3</small></li>
+      <li>一组按钮里只有一个醒目的？危险和不常用的操作有没有退后？<small>规则 4</small></li>
+      <li>标签和值，强的那个是不是用户正在找的？<small>规则 5</small></li>
+      <li>广告、运营位、装饰色块有没有抢走核心信息？<small>规则 1、2</small></li>
+      <li>分组标题、表头这类"结构标记"是不是比内容弱？<small>规则 2</small></li>
+    </ul>
+  </section>
+
+  <div class="next">
+    <div>
+      <h3>下一课：组件、形状与状态</h3>
+      <p>按钮、列表、输入框这些组件怎么做；圆角、阴影、图标的规律；按下、禁用、加载、出错时分别长什么样。</p>
+    </div>
+    <span class="meta">即将推出</span>
+  </div>
+
+  <footer class="refs">
+    <h2>参考资料</h2>
+    <ul>
+      <li><a href="https://developer.apple.com/design/human-interface-guidelines/typography" target="_blank" rel="noopener">Apple HIG · Typography</a>（iOS 默认字号表）</li>
+      <li><a href="https://developer.apple.com/design/human-interface-guidelines/buttons" target="_blank" rel="noopener">Apple HIG · Buttons</a>（醒目按钮的数量与样式）</li>
+      <li><a href="https://developer.apple.com/design/human-interface-guidelines/color" target="_blank" rel="noopener">Apple HIG · Color</a>（文字的几级灰）</li>
+      <li><a href="https://www.nngroup.com/articles/visual-hierarchy-ux-definition/" target="_blank" rel="noopener">NN/g · Visual Hierarchy in UX: Definition</a></li>
+      <li><a href="https://www.refactoringui.com/" target="_blank" rel="noopener">Refactoring UI</a>（Hierarchy is everything 一章）</li>
+      <li><a href="https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html" target="_blank" rel="noopener">WCAG 2.2 · 1.4.3 最低对比度</a></li>
+    </ul>
+  </footer>
+
+</main>
+<script src="../../assets/lesson.js"></script>
+</body>
+</html>

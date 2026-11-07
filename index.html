@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>学 UI 课程</title>
+<link rel="stylesheet" href="assets/lesson.css">
+<style>
+  .course { list-style: none; padding: 0; margin: 24px 0 0; display: grid; gap: 10px; }
+  .course li {
+    display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 16px; align-items: center;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 16px 20px;
+  }
+  .course .n { font-size: 15px; font-weight: 600; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .course h3 { margin: 0; font-size: 17px; }
+  .course p { margin: 2px 0 0; font-size: 14px; line-height: 1.6; color: var(--text-2); }
+  .course .links { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+  .course .links a {
+    font-size: 14px; font-weight: 500; text-decoration: none; padding: 6px 14px; border-radius: 999px;
+    background: var(--accent-soft); color: var(--accent); white-space: nowrap;
+  }
+  .course .soon { font-size: 13px; color: var(--text-3); white-space: nowrap; }
+  .course li.locked h3 { color: var(--text-2); }
+  .course li.done .n { color: var(--accent); }
+  @media (max-width: 600px) {
+    .course li { grid-template-columns: 32px minmax(0, 1fr); }
+    .course .links, .course .soon { grid-column: 2; justify-content: flex-start; }
+  }
+</style>
+</head>
+<body>
+<main class="page">
+  <header class="prose">
+    <p class="eyebrow">给研发的 UI 课</p>
+    <h1>从零开始，把"好不好看"讲清楚</h1>
+    <p class="lead">9 节课，纯讲解，不做题。先认识界面由哪些零件组成，再一种一种讲清楚每种零件的规律，最后把它们串起来，学会看懂一个界面好在哪、差在哪。</p>
+  </header>
+
+  <section class="prose" style="margin-top:48px">
+    <h2>怎么学</h2>
+    <ol class="steps">
+      <li>按顺序读，后面的课会用到前面的概念。</li>
+      <li>每课都配了手机或网页示例，页面上的按钮只是用来"演示"的，点开看看就好。</li>
+      <li>每学完一课，<code>checklist.md</code> 会多一节要点，方便以后翻。</li>
+    </ol>
+  </section>
+
+  <section style="margin-top:48px">
+    <h2 class="prose">课程</h2>
+    <ol class="course">
+      <li class="done">
+        <span class="n">01</span>
+        <div><h3>认识界面</h3><p>单位 pt 是什么；iOS 页面的固定区域；界面只由 6 种零件组成；"好看"的第一层答案：有规律。</p></div>
+        <div class="links"><a href="lessons/01-anatomy/index.html">开始</a></div>
+      </li>
+      <li class="locked">
+        <span class="n">02</span>
+        <div><h3>文字</h3><p>字号怎么分级（iOS 正文为什么是 17pt）、字重、行高、行宽，中文排版的特殊之处。</p></div>
+        <span class="soon">下一课</span>
+      </li>
+      <li class="locked">
+        <span class="n">03</span>
+        <div><h3>颜色</h3><p>中性色、强调色、语义色；灰色为什么要分几级；对比度怎么算；暗色模式。</p></div>
+        <span class="soon">待写</span>
+      </li>
+      <li class="locked">
+        <span class="n">04</span>
+        <div><h3>间距与对齐</h3><p>8pt 网格；用间距表达分组；对齐线越少越整齐。</p></div>
+        <span class="soon">待写</span>
+      </li>
+      <li class="done">
+        <span class="n">05</span>
+        <div><h3>视觉层级</h3><p>把文字、颜色、间距组合起来，决定用户先看什么、后看什么。</p></div>
+        <div class="links"><a href="lessons/05-hierarchy/index.html">已写好</a></div>
+      </li>
+      <li class="locked">
+        <span class="n">06</span>
+        <div><h3>组件、形状与状态</h3><p>按钮、列表、输入框；圆角、阴影、图标；按下、禁用、加载、出错时的样子。</p></div>
+        <span class="soon">待写</span>
+      </li>
+      <li class="locked">
+        <span class="n">07</span>
+        <div><h3>iOS 页面结构与导航</h3><p>标签栏、导航栈、弹出层怎么配合；和 Android、网页的差异；液态玻璃该用在哪。</p></div>
+        <span class="soon">待写</span>
+      </li>
+      <li class="locked">
+        <span class="n">08</span>
+        <div><h3>动效与反馈</h3><p>动画的时长和曲线、弹簧动画，以及"减弱动态效果"设置。</p></div>
+        <span class="soon">待写</span>
+      </li>
+      <li class="locked">
+        <span class="n">09</span>
+        <div><h3>怎么看懂一个界面</h3><p>把前 8 课串起来，带你完整走一遍：拿到一个界面，按什么顺序看，怎么说清好在哪、差在哪、怎么改。</p></div>
+        <span class="soon">待写</span>
+      </li>
+    </ol>
+  </section>
+
+  <footer class="refs">
+    <h2>主要参考</h2>
+    <ul>
+      <li><a href="https://developer.apple.com/design/human-interface-guidelines" target="_blank" rel="noopener">Apple Human Interface Guidelines</a></li>
+      <li><a href="https://m3.material.io/" target="_blank" rel="noopener">Material Design 3</a></li>
+      <li><a href="https://www.w3.org/TR/WCAG22/" target="_blank" rel="noopener">WCAG 2.2</a></li>
+      <li><a href="https://www.refactoringui.com/" target="_blank" rel="noopener">Refactoring UI</a></li>
+      <li><a href="https://ant.design/docs/spec/introduce-cn" target="_blank" rel="noopener">Ant Design 设计规范</a></li>
+      <li><a href="https://www.nngroup.com/articles/ten-usability-heuristics/" target="_blank" rel="noopener">NN/g 十大可用性原则</a> · <a href="https://lawsofux.com/" target="_blank" rel="noopener">Laws of UX</a></li>
+    </ul>
+  </footer>
+</main>
+</body>
+</html>

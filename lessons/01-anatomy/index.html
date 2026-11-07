@@ -1,0 +1,637 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 1 课 · 认识界面</title>
+<link rel="stylesheet" href="../../assets/lesson.css">
+<style>
+  /* ================= 通用：两栏（左手机、右说明） ================= */
+  .split { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 48px; align-items: start; margin-top: 28px; }
+  .split .device { --device-zoom: 0.78; zoom: var(--device-zoom); }
+
+  /* ================= 02 单位：pt 和像素 ================= */
+  .density { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 24px; }
+  .dens { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; text-align: center; }
+  .dens .grid {
+    width: 96px; height: 96px; margin: 0 auto 14px; border-radius: 6px;
+    background-color: #3451d1;
+    background-image:
+      linear-gradient(to right, rgba(255,255,255,.85) 1.5px, transparent 1.5px),
+      linear-gradient(to bottom, rgba(255,255,255,.85) 1.5px, transparent 1.5px);
+  }
+  .dens .g1 { background-size: 96px 96px; }
+  .dens .g2 { background-size: 48px 48px; }
+  .dens .g3 { background-size: 32px 32px; }
+  .dens b { display: block; font-size: 17px; }
+  .dens span { font-size: 14px; color: var(--text-2); }
+
+  /* ================= 03 屏幕骨架 ================= */
+  .sk .statusbar { height: 59px; padding-top: 10px; }
+  .sk .screen { background: #f2f2f7; }
+  .sk .nav { height: 44px; flex: none; display: flex; align-items: center; justify-content: center; font: 600 17px/1 -apple-system, "PingFang SC", sans-serif; color: #000; }
+  .sk .list { flex: 1; overflow: hidden; padding: 8px 16px; display: flex; flex-direction: column; gap: 12px; }
+  .sk .item { background: #fff; border-radius: 14px; height: 76px; padding: 14px 16px; display: flex; gap: 12px; align-items: center; }
+  .sk .item i { width: 48px; height: 48px; border-radius: 10px; background: #e5e5ea; flex: none; }
+  .sk .item div { flex: 1; }
+  .sk .item s { display: block; height: 10px; border-radius: 5px; background: #d1d1d6; text-decoration: none; }
+  .sk .item s + s { width: 55%; margin-top: 10px; background: #e5e5ea; }
+  .sk .tabbar { flex: none; height: 83px; padding-bottom: 34px; display: flex; justify-content: space-around; align-items: center; background: rgba(255,255,255,.96); border-top: 0.5px solid rgba(60,60,67,.29); }
+  .sk .tabbar span { width: 26px; height: 26px; border-radius: 7px; background: #c7c7cc; }
+  .sk .tabbar span:nth-child(2) { background: #0066cc; }
+  /* 覆盖色带 */
+  .band { position: absolute; left: 0; right: 0; z-index: 4; pointer-events: none; display: flex; align-items: center; justify-content: flex-end; padding-right: 12px; }
+  .band em { font: 600 12px/1 -apple-system, "PingFang SC", sans-serif; font-style: normal; color: #fff; padding: 4px 8px; border-radius: 6px; }
+  .b-top { top: 0; height: 59px; background: rgba(255, 59, 48, .22); }
+  .b-top em { background: #d63a2f; }
+  .b-nav { top: 59px; height: 44px; background: rgba(0, 102, 204, .18); }
+  .b-nav em { background: #0066cc; }
+  .b-tab { bottom: 34px; height: 49px; background: rgba(52, 168, 83, .22); }
+  .b-tab em { background: #2b8a3e; }
+  .b-bot { bottom: 0; height: 34px; background: rgba(255, 149, 0, .28); }
+  .b-bot em { background: #c25e00; }
+  .b-side { top: 103px; bottom: 83px; width: 16px; background: rgba(175, 82, 222, .28); padding: 0; justify-content: center; }
+  .b-side.l { left: 0; right: auto; }
+  .b-side.r { right: 0; left: auto; }
+  .b-side em { background: #8e3fbf; padding: 4px 3px; font-size: 11px; }
+
+  .legend { list-style: none; padding: 0; margin: 0; }
+  .legend li { position: relative; padding: 0 0 18px 28px; }
+  .legend li::before { content: ""; position: absolute; left: 0; top: 7px; width: 14px; height: 14px; border-radius: 4px; background: var(--c); }
+  .legend b { display: block; font-size: 16px; }
+  .legend span { font-size: 15px; color: var(--text-2); line-height: 1.7; }
+
+  .webskel { margin-top: 20px; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--surface); font-size: 13px; color: var(--text-2); }
+  .webskel .top { height: 44px; display: flex; align-items: center; padding: 0 16px; background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  .webskel .body { display: grid; grid-template-columns: 150px 1fr; min-height: 150px; }
+  .webskel .side { background: var(--surface-2); padding: 14px 16px; }
+  .webskel .main { padding: 14px 16px; display: flex; justify-content: center; }
+  .webskel .main div { width: 80%; border: 1.5px dashed var(--text-3); border-radius: 8px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 12px; }
+
+  /* ================= 订单详情页（04 和 05 共用） ================= */
+  .od .nav { height: 44px; flex: none; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 0 16px; }
+  .od .nav .back { justify-self: start; }
+  .od .nav .more { justify-self: end; }
+  .od .content { flex: 1; overflow: hidden; padding: 4px 16px 16px; display: flex; flex-direction: column; gap: 12px; }
+  .od .status { padding: 12px 4px 8px; }
+  .od .bar { height: 4px; border-radius: 2px; margin-top: 14px; overflow: hidden; }
+  .od .bar i { display: block; height: 100%; width: 72%; border-radius: 2px; }
+  .od .card { background: #fff; border-radius: 14px; padding: 14px 16px; }
+  .od .product { display: flex; align-items: center; gap: 12px; }
+  .od .thumb { width: 52px; height: 52px; border-radius: 10px; background: linear-gradient(135deg, #f4f4f6, #dcdce1); flex: none; }
+  .od .pinfo { flex: 1; min-width: 0; }
+  .od .row { display: flex; justify-content: space-between; align-items: baseline; padding: 5px 0; }
+  .od .row.total { border-top: 0.5px solid rgba(60,60,67,.29); margin-top: 6px; padding-top: 11px; }
+  .od .bottombar { flex: none; background: #fff; padding: 10px 16px 34px; display: flex; gap: 10px; }
+  .od .bottombar button { flex: 1; border: 0; font-family: inherit; }
+
+  /* 有规律的版本 */
+  .vB .nav { color: #000; }
+  .vB .nav .back { font-size: 17px; color: #0066cc; }
+  .vB .nav .title { font-size: 17px; font-weight: 600; }
+  .vB .nav .more { font-size: 17px; color: #0066cc; letter-spacing: 1px; }
+  .vB .st { font-size: 28px; font-weight: 700; color: #000; line-height: 1.2; }
+  .vB .eta { font-size: 15px; color: #6e6e73; margin-top: 4px; }
+  .vB .bar { background: #e5e5ea; }
+  .vB .bar i { background: #0066cc; }
+  .vB .pname { font-size: 17px; color: #000; }
+  .vB .pspec { font-size: 15px; color: #6e6e73; margin-top: 2px; }
+  .vB .pprice { font-size: 17px; color: #000; }
+  .vB .who { font-size: 17px; color: #000; }
+  .vB .where { font-size: 15px; color: #6e6e73; margin-top: 2px; }
+  .vB .k { font-size: 15px; color: #6e6e73; }
+  .vB .v { font-size: 15px; color: #000; font-variant-numeric: tabular-nums; }
+  .vB .total .k { color: #000; }
+  .vB .total .v { font-size: 20px; font-weight: 600; }
+  .vB .bottombar { border-top: 0.5px solid rgba(60,60,67,.29); }
+  .vB .bottombar button { height: 50px; border-radius: 25px; font-size: 17px; font-weight: 600; }
+  .vB .b-cs { background: rgba(118,118,128,.12); color: #000; }
+  .vB .b-ok { background: #0066cc; color: #fff; }
+
+  /* 随手的版本 */
+  .sA { background: #e53935 !important; }
+  .vA { background: #f2f2f7; }
+  .vA .nav { background: #e53935; color: #fff; }
+  .vA .nav .back, .vA .nav .more { font-size: 16px; font-weight: 700; }
+  .vA .nav .title { font-size: 20px; font-weight: 700; }
+  .vA .st { font-size: 16px; font-weight: 700; color: #000; }
+  .vA .eta { font-size: 15px; font-weight: 700; color: #f57c00; margin-top: 2px; }
+  .vA .bar { background: #ffe0b2; }
+  .vA .bar i { background: #f57c00; }
+  .vA .pname { font-size: 16px; font-weight: 700; color: #1e88e5; }
+  .vA .pspec { font-size: 14px; font-weight: 700; color: #000; margin-top: 2px; }
+  .vA .pprice { font-size: 18px; font-weight: 700; color: #e53935; }
+  .vA .who { font-size: 15px; font-weight: 700; color: #000; }
+  .vA .where { font-size: 15px; font-weight: 700; color: #333; margin-top: 2px; }
+  .vA .k { font-size: 15px; font-weight: 700; color: #000; }
+  .vA .v { font-size: 15px; font-weight: 700; color: #e53935; }
+  .vA .v.coupon { color: #43a047; }
+  .vA .total .k, .vA .total .v { font-size: 16px; }
+  .vA .info .k, .vA .info .v { font-size: 14px; }
+  .vA .info .v { color: #666; }
+  .vA .bottombar button { height: 44px; border-radius: 8px; color: #fff; font-size: 15px; font-weight: 700; }
+  .vA .b-cancel { background: #e53935; }
+  .vA .b-cs { background: #1e88e5; }
+  .vA .b-ok { background: #43a047; }
+
+  /* ================= 04 拆解器 ================= */
+  .xtabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .xtabs button {
+    font: inherit; font-size: 15px; font-weight: 500; cursor: pointer;
+    padding: 8px 16px; border-radius: 999px; border: 1px solid var(--line);
+    background: var(--surface); color: var(--text);
+  }
+  .xtabs button[aria-selected="true"] { background: var(--text); color: var(--surface); border-color: var(--text); }
+  .xtabs button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .xp { display: none; }
+  .xp.on { display: block; }
+  .xp h3 { font-size: 20px; margin-bottom: 8px; }
+  .xp > p { color: var(--text); margin-bottom: 14px; }
+  .vals { margin: 0 0 14px; padding: 16px 18px; background: var(--surface-2); border-radius: 12px; display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; font-size: 15px; }
+  .vals dt { color: var(--text-2); white-space: nowrap; }
+  .vals dd { margin: 0; font-variant-numeric: tabular-nums; }
+  .xp .later { font-size: 14px; color: var(--text-3); margin: 0; }
+  .chips { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 14px; }
+  .chip { display: flex; align-items: center; gap: 8px; font-size: 13px; background: var(--surface-2); padding: 6px 10px 6px 6px; border-radius: 10px; }
+  .chip i { width: 24px; height: 24px; border-radius: 6px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.12); }
+  .chip code { background: none; padding: 0; font-size: 12px; color: var(--text-2); }
+
+  .explode .screen-body *, .explode .screen-body { transition: outline-color .2s, background-color .2s, filter .3s; }
+  .explode [data-r], .explode [data-comp] { position: relative; }
+  /* 文字 */
+  .x-text .t { outline: 1.5px solid #e8590c; outline-offset: 1px; }
+  .x-text .t:not(button) { background-color: rgba(232, 89, 12, .10); }
+  /* 颜色：去色，只剩明暗 */
+  .x-color .screen-body { filter: grayscale(1); }
+  /* 间距：蓝 = 块与块之间，橙 = 块内部 */
+  .x-space .content { background-color: #cfe2f7; position: relative; }
+  .x-space .card { background-color: #ffd29e; }
+  .x-space .card > *, .x-space .card .row > * { background-color: #fff; }
+  .x-space .card .row { background-color: transparent; }
+  .x-space .bottombar { background-color: #ffd29e; }
+  .x-space .content::before, .x-space .content::after {
+    content: "16"; position: absolute; top: 46%; width: 16px; text-align: center;
+    font: 700 10px/1 -apple-system, sans-serif; color: #004f9e;
+  }
+  .x-space .content::before { left: 0; }
+  .x-space .content::after { right: 0; }
+  .x-space .card + .card::before {
+    content: "12"; position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+    font: 700 10px/12px -apple-system, sans-serif; color: #004f9e;
+  }
+  .x-space .card { position: relative; }
+  /* 形状 */
+  .x-shape [data-r] { outline: 1.5px dashed #8e3fbf; outline-offset: 2px; }
+  .x-shape .bar { overflow: visible; }
+  .x-shape [data-r]::after {
+    content: "圆角 " attr(data-r); position: absolute; top: -9px; right: 10px; z-index: 3;
+    font: 600 12px/16px -apple-system, "PingFang SC", sans-serif; color: #fff; background: #8e3fbf;
+    padding: 0 6px; border-radius: 5px; white-space: nowrap;
+  }
+  .x-shape .bar[data-r]::after { top: -20px; right: 0; }
+  .x-shape .thumb[data-r]::after { top: -12px; right: -14px; }
+  .x-shape .row.total { position: relative; border-top: 1.5px solid #8e3fbf; }
+  .x-shape .row.total::before {
+    content: "分割线 0.5pt"; position: absolute; top: -9px; left: 50%; transform: translateX(-50%);
+    font: 600 12px/16px -apple-system, "PingFang SC", sans-serif; color: #fff; background: #8e3fbf; padding: 0 6px; border-radius: 5px; white-space: nowrap;
+  }
+  /* 图标与图片 */
+  .x-icon .ic { outline: 2px solid #2b8a3e; outline-offset: 2px; background-color: rgba(43, 138, 62, .12); border-radius: 6px; }
+  /* 组件 */
+  .x-comp [data-comp] { outline: 2px solid #0066cc; outline-offset: 1px; }
+  .x-comp [data-comp]::after {
+    content: attr(data-comp); position: absolute; top: -9px; left: 10px; z-index: 3;
+    font: 600 12px/16px -apple-system, "PingFang SC", sans-serif; color: #fff; background: #0066cc;
+    padding: 0 6px; border-radius: 5px; white-space: nowrap;
+  }
+
+  /* ================= 05 规律 ================= */
+  .twin { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; margin-top: 28px; }
+  .twin .frame { align-items: stretch; }
+  .twin .device { --device-zoom: 0.6; zoom: var(--device-zoom); align-self: center; }
+  .twin .cap { font-size: 16px; font-weight: 600; text-align: center; margin: 0 0 12px; }
+  .twin .cap small { display: block; font-size: 14px; font-weight: 400; color: var(--text-2); }
+  .tokens { margin-top: 18px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; font-size: 14px; }
+  .tokens .tk { display: grid; grid-template-columns: 64px 1fr; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .tokens .tk:last-child { border-bottom: 0; }
+  .tokens .tk > span:first-child { color: var(--text-2); }
+  .tokens .sw { display: inline-flex; gap: 4px; flex-wrap: wrap; }
+  .tokens .sw i { width: 18px; height: 18px; border-radius: 5px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.15); }
+  .tokens .n { font-weight: 600; margin-right: 6px; }
+  .code {
+    font-family: var(--mono); font-size: 13.5px; line-height: 1.7;
+    background: var(--surface-2); border-radius: 12px; padding: 14px 18px; margin: 0 0 16px; overflow-x: auto; white-space: pre;
+  }
+
+  /* ================= 06 小词典 ================= */
+  .gloss { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 24px; }
+  .term { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; }
+  .term b { font-size: 16px; }
+  .term .where { float: right; font-size: 12px; color: var(--text-3); background: var(--surface-2); padding: 1px 8px; border-radius: 6px; margin-top: 2px; }
+  .term p { margin: 4px 0 0; font-size: 14px; line-height: 1.7; color: var(--text-2); }
+
+  @media (max-width: 860px) {
+    .split { grid-template-columns: minmax(0, 1fr); justify-items: center; gap: 28px; }
+    .split > div:last-child { justify-self: stretch; }
+    .twin { grid-template-columns: minmax(0, 1fr); }
+    .gloss { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 600px) {
+    .split .device { --device-zoom: 0.7; }
+    .density { grid-template-columns: minmax(0, 1fr); }
+    .webskel .body { grid-template-columns: 90px 1fr; }
+  }
+</style>
+</head>
+<body>
+<main class="page">
+
+  <nav class="crumb"><a href="../../index.html">← 课程目录</a></nav>
+
+  <header class="prose">
+    <p class="eyebrow">第 1 课 / 共 9 课</p>
+    <h1>认识界面：它是由什么组成的</h1>
+    <p class="lead">先不谈好不好看。这一课只做一件事：把一个界面拆开，认清里面有哪些零件、用什么单位。后面每一课，讲的都是其中一种零件。</p>
+    <p class="meta">约 15 分钟 · 纯讲解</p>
+  </header>
+
+  <!-- 01 -->
+  <section class="prose">
+    <h2><span class="num">01</span>界面只做两件事</h2>
+    <p>不管是 App 还是网页，界面上的每个元素都在做下面两件事之一：</p>
+    <ul>
+      <li><b>传达信息</b>：文字、数字、图片，告诉用户"现在是什么情况"。</li>
+      <li><b>提供操作</b>：按钮、输入框、可以点的列表行，让用户"做点什么"。</li>
+    </ul>
+    <p>我们说一个 UI "好"，第一层意思是：信息一眼就能看懂，操作一下就能找到、不会点错。第二层才是"看着舒服"。</p>
+    <p>"看着舒服"听起来很玄，其实大部分来自一套<b>可以讲清楚的规律</b>。这门课就是把这些规律一条条讲给你。</p>
+  </section>
+
+  <!-- 02 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">02</span>单位：pt 是什么</h2>
+      <p>写 UI 时用到的数字，比如字号 17、边距 16、按钮高 44，单位都<b>不是</b>屏幕的物理像素，而是一种<b>逻辑单位</b>：</p>
+      <ul>
+        <li>iOS 叫 <b>pt</b>（point，点）</li>
+        <li>Android 叫 <b>dp</b></li>
+        <li>网页叫 <b>CSS px</b></li>
+      </ul>
+      <p>三个名字，同一个意思：一个和屏幕清晰度无关的尺寸单位。</p>
+      <p>为什么需要它？因为不同手机屏幕的像素密度不一样。iPhone 16 的屏幕实际有 1179 × 2556 个像素，按 3 倍密度（写作 @3x）换算，逻辑尺寸是 <b>393 × 852 pt</b>。同一个 44pt 的按钮，在 2 倍屏上占 88 个像素，在 3 倍屏上占 132 个像素，人眼看起来一样大。</p>
+    </div>
+    <div class="density">
+      <div class="dens"><div class="grid g1"></div><b>@1x</b><span>1pt = 1 个像素<br>（早期非 Retina 屏）</span></div>
+      <div class="dens"><div class="grid g2"></div><b>@2x</b><span>1pt = 2 × 2 个像素</span></div>
+      <div class="dens"><div class="grid g3"></div><b>@3x</b><span>1pt = 3 × 3 个像素<br>（现在大多数 iPhone）</span></div>
+    </div>
+    <div class="prose">
+      <div class="callout">
+        <p><b>对写代码的意义</b>：SwiftUI 里 <code>.padding(16)</code>、<code>.font(.system(size: 17))</code> 的数字就是 pt；CSS 里的 <code>16px</code> 也是逻辑像素。所以规范里看到的数字，可以直接写进代码，不用换算。</p>
+      </div>
+      <p>这门课里所有手机示例，用的都是 393 × 852 pt 的画布（iPhone 15 / 16 的逻辑尺寸），1 个 CSS px 就代表 1pt。</p>
+    </div>
+  </section>
+
+  <!-- 03 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">03</span>屏幕的骨架：iOS 页面的固定区域</h2>
+      <p>画布不是整块都能随便放东西。一个典型的 iOS 页面，从上到下有几块位置和高度相对固定的区域：</p>
+    </div>
+    <div class="split">
+      <div class="device sk"><div class="screen">
+        <div class="statusbar" data-ignore><span>9:41</span><span class="island"></span><span class="icons"></span></div>
+        <div class="nav">我的订单</div>
+        <div class="list">
+          <div class="item"><i></i><div><s></s><s></s></div></div>
+          <div class="item"><i></i><div><s></s><s></s></div></div>
+          <div class="item"><i></i><div><s></s><s></s></div></div>
+          <div class="item"><i></i><div><s></s><s></s></div></div>
+          <div class="item"><i></i><div><s></s><s></s></div></div>
+          <div class="item"><i></i><div><s></s><s></s></div></div>
+        </div>
+        <div class="tabbar"><span></span><span></span><span></span></div>
+        <div class="home-indicator"></div>
+        <div class="band b-top"><em>顶部安全区</em></div>
+        <div class="band b-nav"><em>导航栏 44pt</em></div>
+        <div class="band b-side l"><em>16</em></div>
+        <div class="band b-side r"><em>16</em></div>
+        <div class="band b-tab"><em>标签栏 49pt</em></div>
+        <div class="band b-bot"><em>底部安全区 34pt</em></div>
+      </div></div>
+      <div>
+        <ul class="legend">
+          <li style="--c:#d63a2f"><b>顶部安全区</b><span>状态栏和灵动岛占的位置，内容不要放进去。iPhone 15 / 16 上约 59pt，不同机型不一样，所以代码里不要写死，用系统给的安全区。</span></li>
+          <li style="--c:#0066cc"><b>导航栏：44pt</b><span>放返回按钮、页面标题、右上角操作。往下滑会缩小的"大标题"是它的另一种样式。</span></li>
+          <li style="--c:#8e3fbf"><b>左右边距：16pt</b><span>内容离屏幕边缘的距离，系统默认 16pt（大屏机型是 20pt）。几乎所有内容都对齐这两条线。</span></li>
+          <li style="--c:#2b8a3e"><b>标签栏：49pt</b><span>底部的 3～5 个主入口。iOS 26 起它变成了悬浮的玻璃胶囊样式，但位置和作用没变。</span></li>
+          <li style="--c:#c25e00"><b>底部安全区：34pt</b><span>Home 指示条那一条，同样不放内容和按钮。</span></li>
+        </ul>
+        <p style="color:var(--text-2);font-size:15px">剩下中间那块，才是真正放内容的地方。iOS 系统控件（导航栏、标签栏）会自动处理这些区域；自己画界面时，要记得给安全区留出位置。</p>
+      </div>
+    </div>
+    <div class="prose">
+      <h3 style="margin-top:32px">网页呢？</h3>
+      <p>网页没有系统规定的骨架，但最常见的结构是这样的（数字是常见做法，不是标准）：</p>
+      <div class="webskel">
+        <div class="top">顶栏　约 56～64px 高</div>
+        <div class="body">
+          <div class="side">侧边导航<br>约 200～260px 宽</div>
+          <div class="main"><div>内容区<br>限制最大宽度（比如 1200px）并居中，<br>屏幕再宽，内容也不会无限拉长</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">04</span>界面上的一切，只由 6 种零件组成</h2>
+      <p>把任何界面拆到底，都只剩下面 6 种零件。点上面的按钮，左边的手机会把对应的零件标出来，右边告诉你这个页面里它们具体取了什么值。</p>
+    </div>
+    <div class="split">
+      <div class="device explode x-text" id="explode"><div class="screen">
+        <div class="statusbar" data-ignore><span>9:41</span><span class="island"></span><span class="icons ic"></span></div>
+        <div class="screen-body od vB">
+          <div class="nav" data-comp="导航栏">
+            <span class="back ic">‹ 订单</span><span class="title">订单详情</span><span class="more ic">•••</span>
+          </div>
+          <div class="content">
+            <div class="status" data-comp="状态区">
+              <div class="st">运输中</div>
+              <div class="eta">预计 11 月 8 日（周日）送达</div>
+              <div class="bar" data-r="2"><i></i></div>
+            </div>
+            <div class="card product" data-r="14" data-comp="商品卡片">
+              <div class="thumb ic" data-r="10"></div>
+              <div class="pinfo"><div class="pname">AirPods Pro（第 2 代）</div><div class="pspec">白色 · ×1</div></div>
+              <div class="pprice">¥1,899</div>
+            </div>
+            <div class="card" data-r="14" data-comp="信息卡片">
+              <div class="who">张三　138****5678</div>
+              <div class="where">上海市浦东新区世纪大道 100 号</div>
+            </div>
+            <div class="card" data-r="14" data-comp="列表（标签 + 值）">
+              <div class="row"><span class="k">商品金额</span><span class="v">¥1,899.00</span></div>
+              <div class="row"><span class="k">运费</span><span class="v">¥0.00</span></div>
+              <div class="row"><span class="k">优惠券</span><span class="v">−¥100.00</span></div>
+              <div class="row total"><span class="k">实付</span><span class="v">¥1,799.00</span></div>
+            </div>
+            <div class="card info" data-r="14" data-comp="列表（标签 + 值）">
+              <div class="row"><span class="k">订单编号</span><span class="v">2026110621345678</span></div>
+              <div class="row"><span class="k">下单时间</span><span class="v">2026-11-06 21:34</span></div>
+            </div>
+          </div>
+          <div class="bottombar">
+            <button type="button" class="b-cs" data-r="25" data-comp="次按钮">联系客服</button>
+            <button type="button" class="b-ok" data-r="25" data-comp="主按钮">确认收货</button>
+          </div>
+        </div>
+        <div class="home-indicator"></div>
+      </div></div>
+
+      <div>
+        <div class="xtabs" role="tablist">
+          <button type="button" role="tab" data-x="text" aria-selected="true">① 文字</button>
+          <button type="button" role="tab" data-x="color">② 颜色</button>
+          <button type="button" role="tab" data-x="space">③ 间距</button>
+          <button type="button" role="tab" data-x="shape">④ 形状</button>
+          <button type="button" role="tab" data-x="icon">⑤ 图标与图片</button>
+          <button type="button" role="tab" data-x="comp">⑥ 组件</button>
+        </div>
+
+        <div class="xp on" data-x="text">
+          <h3>文字</h3>
+          <p>界面上大部分信息靠文字传达。控制文字的只有四个变量：<b>字号</b>（多大）、<b>字重</b>（多粗）、<b>颜色</b>（多深）、<b>行高</b>（行与行之间的距离）。</p>
+          <dl class="vals">
+            <dt>字号</dt><dd>只有 4 种：28 / 20 / 17 / 15 pt</dd>
+            <dt>字重</dt><dd>3 种：常规、半粗（标题、按钮、实付金额）、粗（"运输中"）</dd>
+            <dt>颜色</dt><dd>3 种：黑色主文字、灰色次要文字、蓝色可点击文字（另有按钮上的白字）</dd>
+          </dl>
+          <p class="later">第 2 课细讲：为什么 iOS 正文是 17pt，字号怎么分级。</p>
+        </div>
+
+        <div class="xp" data-x="color">
+          <h3>颜色</h3>
+          <p>左边现在被去掉了颜色，只剩明暗。你会发现页面几乎没变，只有原来蓝色的几处（按钮、进度条、左上角返回、右上角更多）变成了灰：<b>这个页面只有一种彩色</b>，其余全是黑白灰。</p>
+          <div class="chips">
+            <span class="chip"><i style="background:#f2f2f7"></i>背景 <code>#F2F2F7</code></span>
+            <span class="chip"><i style="background:#ffffff"></i>卡片 <code>#FFFFFF</code></span>
+            <span class="chip"><i style="background:#000000"></i>主文字 <code>#000000</code></span>
+            <span class="chip"><i style="background:#6e6e73"></i>次要文字 <code>#6E6E73</code></span>
+            <span class="chip"><i style="background:#0066cc"></i>强调色 <code>#0066CC</code></span>
+          </div>
+          <p>界面里的颜色一般分三类：<b>中性色</b>（黑白灰，占绝大部分面积）、<b>强调色</b>（通常是品牌色，用在可以点的地方）、<b>语义色</b>（红色表示错误或危险，绿色表示成功，等等）。</p>
+          <p class="later">第 3 课细讲：灰色为什么要分几级，对比度怎么算。</p>
+        </div>
+
+        <div class="xp" data-x="space">
+          <h3>间距</h3>
+          <p>元素之间的空白。它不是"空着没用"，而是在告诉用户<b>哪些东西是一组</b>：离得近的是一组，离得远的是两组。</p>
+          <p>左边：<b style="color:#0066cc">蓝色</b>是块与块之间的距离（外边距），<b style="color:#c25e00">橙色</b>是块内部的留白（内边距）。</p>
+          <dl class="vals">
+            <dt>页面左右边距</dt><dd>16pt</dd>
+            <dt>卡片之间</dt><dd>12pt</dd>
+            <dt>卡片内边距</dt><dd>上下 14pt，左右 16pt</dd>
+            <dt>两个按钮之间</dt><dd>10pt</dd>
+          </dl>
+          <p class="later">第 4 课细讲：间距怎么取值（8pt 网格），怎么用间距分组。</p>
+        </div>
+
+        <div class="xp" data-x="shape">
+          <h3>形状</h3>
+          <p>圆角、边框、分割线、阴影，决定元素的轮廓。规律是：<b>同一类元素，形状保持一致</b>，比如所有卡片都是同一个圆角。</p>
+          <dl class="vals">
+            <dt>卡片圆角</dt><dd>14pt</dd>
+            <dt>商品图圆角</dt><dd>10pt</dd>
+            <dt>按钮圆角</dt><dd>25pt：按钮高 50pt，圆角取高度的一半，就成了两头全圆的"胶囊"</dd>
+            <dt>进度条</dt><dd>高 4pt，圆角 2pt（同样是取一半）</dd>
+            <dt>分割线</dt><dd>0.5pt 细线（"实付"上方那条）</dd>
+          </dl>
+          <p class="later">第 6 课细讲。</p>
+        </div>
+
+        <div class="xp" data-x="icon">
+          <h3>图标与图片</h3>
+          <p>图标是"不用读的文字"，图片往往就是内容本身。iOS 有一套官方图标库 <b>SF Symbols</b>，和系统字体配套设计：图标能跟着字号、字重一起变大变粗，放在文字旁边很协调。</p>
+          <dl class="vals">
+            <dt>这个页面里</dt><dd>返回箭头、右上角"更多"、商品图、状态栏的信号和电量图标</dd>
+          </dl>
+          <p>（示例里的返回箭头和"更多"是用字符画的。真实 App 里会用 SF Symbols 里的 <code>chevron.left</code> 和 <code>ellipsis</code>。）</p>
+          <p class="later">第 6 课细讲。</p>
+        </div>
+
+        <div class="xp" data-x="comp">
+          <h3>组件</h3>
+          <p>前面五种零件的<b>固定组合</b>，可以在很多页面里反复使用。拿写代码来类比：前五种是基本类型，组件就是封装好的函数。</p>
+          <dl class="vals">
+            <dt>这个页面里</dt><dd>导航栏、状态区（标题 + 说明 + 进度条）、卡片、列表行（左标签、右数值）、主按钮、次按钮</dd>
+          </dl>
+          <p>好的产品组件很少，但到处复用，所以整个 App 看起来"是一家人"。iOS 系统自带了大部分常用组件，直接用就能和系统保持一致。</p>
+          <p class="later">第 6、7 课细讲：组件的各种状态，iOS 的导航结构。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">05</span>"好看"的第一层答案：有规律</h2>
+      <p>现在可以回答你最开始的问题了："美"到底是什么？至少在 UI 里，很大一部分是<b>规律</b>。</p>
+      <p>下面是同一个页面的两种做法，内容完全一样，区别只在于每个零件取值的方式。手机下面的清单是浏览器从页面里直接读出来的。</p>
+    </div>
+    <div class="twin">
+      <div class="frame">
+        <p class="cap">随手取值<small>每个决定单看都有理由，合起来就乱</small></p>
+        <div class="device"><div class="screen sA">
+          <div class="statusbar light" data-ignore><span>9:41</span><span class="island"></span><span class="icons"></span></div>
+          <div class="screen-body od vA" id="tw-a">
+            <div class="nav"><span class="back">‹ 订单</span><span class="title">订单详情</span><span class="more">···</span></div>
+            <div class="content">
+              <div class="status"><div class="st">运输中</div><div class="eta">预计 11 月 8 日（周日）送达</div><div class="bar"><i></i></div></div>
+              <div class="card product"><div class="thumb"></div><div class="pinfo"><div class="pname">AirPods Pro（第 2 代）</div><div class="pspec">白色 · ×1</div></div><div class="pprice">¥1,899</div></div>
+              <div class="card"><div class="who">张三　138****5678</div><div class="where">上海市浦东新区世纪大道 100 号</div></div>
+              <div class="card">
+                <div class="row"><span class="k">商品金额</span><span class="v">¥1,899.00</span></div>
+                <div class="row"><span class="k">运费</span><span class="v">¥0.00</span></div>
+                <div class="row"><span class="k">优惠券</span><span class="v coupon">−¥100.00</span></div>
+                <div class="row total"><span class="k">实付</span><span class="v">¥1,799.00</span></div>
+              </div>
+              <div class="card info">
+                <div class="row"><span class="k">订单编号</span><span class="v">2026110621345678</span></div>
+                <div class="row"><span class="k">下单时间</span><span class="v">2026-11-06 21:34</span></div>
+              </div>
+            </div>
+            <div class="bottombar"><button type="button" class="b-cancel">取消订单</button><button type="button" class="b-cs">联系客服</button><button type="button" class="b-ok">确认收货</button></div>
+          </div>
+          <div class="home-indicator"></div>
+        </div></div>
+        <div class="tokens" data-tokens="tw-a"></div>
+      </div>
+      <div class="frame">
+        <p class="cap">从清单里取值<small>先定好一张短清单，所有元素只从里面挑</small></p>
+        <div class="device"><div class="screen">
+          <div class="statusbar" data-ignore><span>9:41</span><span class="island"></span><span class="icons"></span></div>
+          <div class="screen-body od vB" id="tw-b">
+            <div class="nav"><span class="back">‹ 订单</span><span class="title">订单详情</span><span class="more">•••</span></div>
+            <div class="content">
+              <div class="status"><div class="st">运输中</div><div class="eta">预计 11 月 8 日（周日）送达</div><div class="bar"><i></i></div></div>
+              <div class="card product"><div class="thumb"></div><div class="pinfo"><div class="pname">AirPods Pro（第 2 代）</div><div class="pspec">白色 · ×1</div></div><div class="pprice">¥1,899</div></div>
+              <div class="card"><div class="who">张三　138****5678</div><div class="where">上海市浦东新区世纪大道 100 号</div></div>
+              <div class="card">
+                <div class="row"><span class="k">商品金额</span><span class="v">¥1,899.00</span></div>
+                <div class="row"><span class="k">运费</span><span class="v">¥0.00</span></div>
+                <div class="row"><span class="k">优惠券</span><span class="v">−¥100.00</span></div>
+                <div class="row total"><span class="k">实付</span><span class="v">¥1,799.00</span></div>
+              </div>
+              <div class="card info">
+                <div class="row"><span class="k">订单编号</span><span class="v">2026110621345678</span></div>
+                <div class="row"><span class="k">下单时间</span><span class="v">2026-11-06 21:34</span></div>
+              </div>
+            </div>
+            <div class="bottombar"><button type="button" class="b-cs">联系客服</button><button type="button" class="b-ok">确认收货</button></div>
+          </div>
+          <div class="home-indicator"></div>
+        </div></div>
+        <div class="tokens" data-tokens="tw-b"></div>
+      </div>
+    </div>
+    <div class="prose" style="margin-top:32px">
+      <p>左边的字号有 14、15、16、18、20，彼此只差一两号；颜色这里标红、那里标绿、那里标蓝。没有哪一处是"错"的，但整体就是让人觉得乱，又说不上为什么。原因就在这里：<b>取值太多、太随意，眼睛找不到规律</b>。</p>
+      <p>你可能注意到，左边的字重反而只有 1 种。那是因为它<b>全部加粗了</b>。所有字一样粗，等于没有用粗细来区分任何东西。所以种类少不一定是有规律，关键是每个取值有没有明确的用途。这一点第 5 课会细讲。</p>
+      <p>右边先定了一张很短的清单，所有地方都从清单里挑。写代码的人对这个很熟悉：左边像满屏的魔法数字，右边像先定义好常量、再到处引用：</p>
+      <pre class="code">// 右边这个页面的"常量表"
+字号     = [28, 20, 17, 15]
+字重     = [常规, 半粗, 粗]
+文字颜色 = [主文字 #000000, 次要 #6E6E73, 强调 #0066CC]
+间距     = [10, 12, 14, 16]
+圆角     = [10, 14, 胶囊]</pre>
+      <p>设计师把这类常量叫做 <b>Design Token</b>（设计令牌），一套 Token 加上用它搭出来的组件，就叫<b>设计系统</b>。</p>
+      <div class="callout">
+        <p>有了清单只是第一步。清单里该放哪些值（为什么正文是 17 而不是 16）、什么时候用哪个，就是后面每一课要讲的。另外，规律不是"美"的全部，品牌感、情绪这些更高层的东西要靠长期积累。这门课先把能讲清楚的部分讲清楚。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 06 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">06</span>小词典</h2>
+      <p>后面会反复出现的词，先混个脸熟，不用记，用到时会再讲。</p>
+    </div>
+    <div class="gloss">
+      <div class="term"><span class="where">本课</span><b>pt / dp / CSS px</b><p>逻辑像素，和屏幕清晰度无关的尺寸单位。</p></div>
+      <div class="term"><span class="where">本课</span><b>安全区</b><p>不会被灵动岛、Home 指示条挡住的区域，内容要放在这里面。</p></div>
+      <div class="term"><span class="where">第 2 课</span><b>字号</b><p>文字的大小。iOS 正文默认 17pt。</p></div>
+      <div class="term"><span class="where">第 2 课</span><b>字重</b><p>文字的粗细：常规（Regular）、中等（Medium）、半粗（Semibold）、粗（Bold）。</p></div>
+      <div class="term"><span class="where">第 2 课</span><b>行高</b><p>一行文字占的高度，决定行与行之间是松还是紧。</p></div>
+      <div class="term"><span class="where">第 3 课</span><b>对比度</b><p>文字和背景的明暗差。有正式标准：小字至少 4.5 : 1。</p></div>
+      <div class="term"><span class="where">第 4 课</span><b>内边距 / 外边距</b><p>元素内部的留白 / 元素和元素之间的距离。</p></div>
+      <div class="term"><span class="where">第 5 课</span><b>视觉层级</b><p>界面替用户排好的"先看什么、后看什么"。</p></div>
+      <div class="term"><span class="where">第 6 课</span><b>圆角</b><p>矩形四个角的弧度。同类元素保持一致。</p></div>
+      <div class="term"><span class="where">第 6 课</span><b>组件 / 状态</b><p>可复用的界面单元（按钮、列表行……）/ 它在不同时刻的样子（默认、按下、禁用、加载中……）。</p></div>
+      <div class="term"><span class="where">第 7 课</span><b>HIG</b><p>Human Interface Guidelines，苹果官方的《人机界面指南》，iOS 设计的标准答案。</p></div>
+      <div class="term"><span class="where">本课</span><b>Design Token / 设计系统</b><p>界面里所有取值的常量表 / Token 加上用它做出来的组件。</p></div>
+    </div>
+  </section>
+
+  <div class="next">
+    <div>
+      <h3>下一课：文字</h3>
+      <p>为什么 iOS 正文是 17pt，字号怎么分级，字重怎么选，中文为什么要更大的行高。</p>
+    </div>
+    <span class="meta">即将推出</span>
+  </div>
+
+  <footer class="refs">
+    <h2>参考资料</h2>
+    <ul>
+      <li><a href="https://developer.apple.com/design/human-interface-guidelines/layout" target="_blank" rel="noopener">Apple HIG · Layout</a>（安全区、边距，以及各机型的屏幕尺寸表）</li>
+      <li><a href="https://developer.apple.com/design/human-interface-guidelines/tab-bars" target="_blank" rel="noopener">Apple HIG · Tab bars</a></li>
+      <li><a href="https://developer.apple.com/design/human-interface-guidelines/sf-symbols" target="_blank" rel="noopener">Apple HIG · SF Symbols</a></li>
+      <li><a href="https://m3.material.io/foundations/layout/understanding-layout/overview" target="_blank" rel="noopener">Material 3 · Layout</a>（dp 和 Android 的布局）</li>
+    </ul>
+  </footer>
+
+</main>
+<script src="../../assets/lesson.js"></script>
+<script>
+  // 04 拆解器：切换高亮模式
+  (function () {
+    const phone = document.getElementById("explode");
+    // 给所有直接含文字的元素打上 .t，供"文字"模式高亮
+    phone.querySelectorAll(".screen-body *").forEach((el) => {
+      const hasText = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim());
+      if (hasText) el.classList.add("t");
+    });
+    const tabs = document.querySelectorAll(".xtabs button");
+    tabs.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const x = btn.dataset.x;
+        tabs.forEach((b) => b.setAttribute("aria-selected", String(b === btn)));
+        document.querySelectorAll(".xp").forEach((p) => p.classList.toggle("on", p.dataset.x === x));
+        phone.className = phone.className.replace(/\bx-\w+/g, "").trim() + " x-" + x;
+      });
+    });
+  })();
+
+  // 05 规律：从页面里读出实际用到的字号、字重、文字颜色
+  (function () {
+    const W = { 400: "常规", 500: "中等", 600: "半粗", 700: "粗", 800: "特粗" };
+    const toHex = (key) => {
+      const m = key.match(/rgba\((\d+),(\d+),(\d+),([\d.]+)\)/);
+      return "#" + [m[1], m[2], m[3]].map((v) => Number(v).toString(16).padStart(2, "0")).join("").toUpperCase();
+    };
+    document.querySelectorAll("[data-tokens]").forEach((box) => {
+      const m = window.UILesson.measure(document.getElementById(box.dataset.tokens));
+      box.innerHTML =
+        `<div class="tk"><span>字号</span><span><span class="n">${m.sizes.length} 种</span>${m.sizes.join(" / ")}</span></div>` +
+        `<div class="tk"><span>字重</span><span><span class="n">${m.weights.length} 种</span>${m.weights.map((w) => W[w] || w).join(" / ")}</span></div>` +
+        `<div class="tk"><span>文字颜色</span><span><span class="n">${m.colorList.length} 种</span><span class="sw">${m.colorList.map((c) => `<i title="${toHex(c)}" style="background:${toHex(c)}"></i>`).join("")}</span></span></div>`;
+    });
+  })();
+</script>
+</body>
+</html>

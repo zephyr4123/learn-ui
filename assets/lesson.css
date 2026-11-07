@@ -1,0 +1,328 @@
+/* 课程页面公共样式：页面框架、手机/浏览器外框、演示控件、度量表 */
+
+:root {
+  --bg: #f7f7f5;
+  --surface: #ffffff;
+  --surface-2: #f0f0ee;
+  --text: #1c1c1e;
+  --text-2: #55555a;
+  --text-3: #85858a;
+  --line: #e4e4e2;
+  --accent: #3451d1;
+  --accent-soft: #eaeefc;
+  --bad: #d9480f;
+  --bad-soft: #fff1ea;
+  --good: #2b8a3e;
+  --good-soft: #ebf7ee;
+  --radius: 14px;
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --device-zoom: 0.82;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121214;
+    --surface: #1b1b1e;
+    --surface-2: #232327;
+    --text: #ececef;
+    --text-2: #a8a8ae;
+    --text-3: #7c7c82;
+    --line: #2c2c31;
+    --accent: #8ea0ff;
+    --accent-soft: #23284a;
+    --bad: #ff8f5e;
+    --bad-soft: #3a2219;
+    --good: #63c77c;
+    --good-soft: #1a3121;
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--accent); text-underline-offset: 3px; }
+
+.page { max-width: 1040px; margin: 0 auto; padding: 48px 24px 96px; }
+.prose { max-width: 720px; }
+
+/* ---------- 页头 ---------- */
+.crumb { font-size: 14px; color: var(--text-3); margin-bottom: 32px; }
+.crumb a { color: var(--text-2); text-decoration: none; }
+.crumb a:hover { color: var(--accent); }
+
+.eyebrow { font-size: 14px; font-weight: 600; color: var(--accent); letter-spacing: 0.02em; margin: 0 0 8px; }
+h1 { font-size: 36px; line-height: 1.25; font-weight: 700; margin: 0 0 12px; letter-spacing: -0.01em; }
+.lead { font-size: 19px; line-height: 1.6; color: var(--text-2); margin: 0 0 16px; }
+.meta { font-size: 14px; color: var(--text-3); margin: 0; }
+
+h2 { font-size: 24px; line-height: 1.35; font-weight: 650; margin: 0 0 16px; letter-spacing: -0.005em; }
+h2 .num { color: var(--text-3); font-weight: 500; margin-right: 10px; font-variant-numeric: tabular-nums; }
+h3 { font-size: 17px; line-height: 1.5; font-weight: 600; margin: 0 0 6px; }
+p { margin: 0 0 16px; }
+
+section { margin-top: 72px; }
+
+.callout {
+  background: var(--accent-soft);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin: 24px 0;
+}
+.callout p:last-child { margin-bottom: 0; }
+
+ol.steps { padding-left: 0; list-style: none; counter-reset: step; margin: 0 0 16px; }
+ol.steps li { counter-increment: step; position: relative; padding-left: 40px; margin-bottom: 12px; }
+ol.steps li::before {
+  content: counter(step);
+  position: absolute; left: 0; top: 2px;
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--surface); border: 1px solid var(--line);
+  font-size: 13px; font-weight: 600; line-height: 24px; text-align: center; color: var(--text-2);
+}
+
+kbd, code { font-family: var(--mono); font-size: 0.88em; background: var(--surface-2); padding: 1px 6px; border-radius: 6px; }
+
+/* ---------- 演示区 ---------- */
+.demo {
+  margin-top: 28px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 24px;
+}
+
+.demo-controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+.demo-controls button {
+  font: inherit; font-size: 14px; font-weight: 500;
+  color: var(--text); background: var(--surface-2);
+  border: 1px solid transparent; border-radius: 999px;
+  padding: 7px 16px; cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.demo-controls button:hover { border-color: var(--line); }
+.demo-controls button[aria-pressed="true"] { background: var(--text); color: var(--surface); }
+.demo-controls button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.squint-hint, .metrics { display: none; }
+.is-squint .squint-hint { display: block; }
+.is-metrics .metrics { display: block; }
+
+.squint-hint {
+  font-size: 15px; color: var(--text-2);
+  background: var(--surface-2); border-radius: 12px;
+  padding: 12px 16px; margin: -8px 0 24px;
+}
+
+.pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 32px;
+  align-items: start;
+}
+.pair.single { grid-template-columns: minmax(0, 1fr); justify-items: center; }
+.stack { display: grid; gap: 32px; }
+
+.frame { display: flex; flex-direction: column; align-items: center; min-width: 0; }
+.frame-tag {
+  font-size: 14px; font-weight: 600; color: var(--text-2);
+  margin-bottom: 12px; align-self: center;
+}
+.stack .frame-tag { align-self: flex-start; }
+
+/* 眯眼测试：把屏幕内容整体模糊 */
+.is-squint .screen-body,
+.is-squint .browser-body { filter: blur(6px); }
+.screen-body, .browser-body { transition: filter 0.25s ease; }
+
+/* ---------- 标注 ---------- */
+.frame[data-kind="bad"] { --anno: #e8590c; }
+.frame[data-kind="good"] { --anno: #2f9e44; }
+
+.screen [data-anno], .browser-body [data-anno] { position: relative; }
+.is-anno .screen [data-anno], .is-anno .browser-body [data-anno] {
+  outline: 2px dashed var(--anno);
+  outline-offset: 2px;
+}
+/* 圆点默认放在元素右侧、垂直居中，不压住文字；可用 data-anno-pos 换位置 */
+.is-anno .screen [data-anno]::after, .is-anno .browser-body [data-anno]::after {
+  content: attr(data-anno);
+  position: absolute; z-index: 5;
+  top: 50%; left: calc(100% + 7px); right: auto; transform: translateY(-50%);
+  min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px;
+  background: var(--anno); color: #fff;
+  font: 600 12px/20px var(--font); text-align: center; letter-spacing: 0;
+  text-transform: none; text-decoration: none; white-space: nowrap;
+  box-shadow: 0 0 0 2px #fff;
+}
+/* left：放在元素左侧 */
+.is-anno [data-anno][data-anno-pos="left"]::after { left: auto; right: calc(100% + 7px); }
+/* edge：骑在元素上边缘靠右（适合整行宽的区块） */
+.is-anno [data-anno][data-anno-pos="edge"]::after { top: -10px; left: auto; right: 14px; transform: none; }
+/* corner：元素右上角外侧（适合按钮） */
+.is-anno [data-anno][data-anno-pos="corner"]::after { top: -9px; left: auto; right: -7px; transform: none; }
+/* end：元素内部最右端（适合右侧有空白的整行） */
+.is-anno [data-anno][data-anno-pos="end"]::after { left: auto; right: 0; }
+
+.notes { display: none; list-style: none; padding: 0; margin: 20px 0 0; width: 100%; max-width: 420px; }
+.stack .notes { max-width: none; }
+.is-anno .notes { display: block; }
+.notes li { position: relative; padding-left: 32px; margin-bottom: 10px; font-size: 15px; line-height: 1.65; color: var(--text); }
+.notes li::before {
+  content: attr(data-n);
+  position: absolute; left: 0; top: 2px;
+  min-width: 20px; height: 20px; border-radius: 10px;
+  background: var(--anno); color: #fff;
+  font-size: 12px; font-weight: 600; line-height: 20px; text-align: center;
+}
+.notes b { font-weight: 600; }
+
+/* ---------- 度量表 ---------- */
+.metrics { margin-top: 28px; overflow-x: auto; }
+.metrics table { width: 100%; border-collapse: collapse; font-size: 14px; line-height: 1.5; min-width: 560px; }
+.metrics th, .metrics td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.metrics th { font-weight: 600; color: var(--text-2); font-size: 13px; }
+.metrics td.v { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.metrics td.v small { display: block; color: var(--text-3); font-size: 12px; white-space: normal; }
+.metrics td.v.over { color: var(--bad); font-weight: 600; }
+.metrics td.ref { color: var(--text-2); }
+.metrics .basis { display: inline-block; font-size: 12px; padding: 0 7px; border-radius: 6px; margin-left: 6px; background: var(--surface-2); color: var(--text-2); }
+.metrics .basis.hard { background: var(--accent-soft); color: var(--accent); }
+.metrics-note { font-size: 13px; color: var(--text-3); margin: 12px 0 0; }
+
+/* ---------- iPhone 外框（393×852pt，即 iPhone 15/16 的逻辑尺寸） ---------- */
+.device {
+  box-sizing: content-box;
+  width: 393px; height: 852px;
+  padding: 11px;
+  border-radius: 62px;
+  background: #121212;
+  box-shadow: 0 0 0 1.5px #3a3a3c, 0 24px 48px -16px rgba(0, 0, 0, 0.35);
+  zoom: var(--device-zoom);
+  flex: none;
+}
+.screen {
+  position: relative;
+  width: 100%; height: 100%;
+  border-radius: 51px;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  background: #f2f2f7;
+}
+.screen-body { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+
+.statusbar {
+  height: 54px; flex: none;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 4px 34px 0 46px;
+  font: 600 17px/1 -apple-system, "SF Pro Text", sans-serif;
+  color: #000; position: relative; z-index: 2;
+}
+.statusbar.light { color: #fff; }
+.statusbar .island {
+  position: absolute; left: 50%; top: 11px; transform: translateX(-50%);
+  width: 124px; height: 36px; border-radius: 20px; background: #000;
+}
+.statusbar .icons { display: flex; gap: 6px; align-items: center; }
+.statusbar svg { display: block; fill: currentColor; }
+.home-indicator {
+  position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%);
+  width: 139px; height: 5px; border-radius: 3px; background: #000; z-index: 3;
+}
+
+/* ---------- 浏览器外框 ---------- */
+.browser {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: #fff;
+  overflow: hidden;
+  box-shadow: 0 16px 40px -20px rgba(0, 0, 0, 0.25);
+}
+.browser-bar {
+  height: 38px; display: flex; align-items: center; gap: 8px; padding: 0 14px;
+  background: #ececec; border-bottom: 1px solid #dcdcdc;
+}
+.browser-bar i { width: 12px; height: 12px; border-radius: 50%; display: block; }
+.browser-bar i:nth-child(1) { background: #ff5f57; }
+.browser-bar i:nth-child(2) { background: #febc2e; }
+.browser-bar i:nth-child(3) { background: #28c840; }
+.browser-bar .url {
+  margin-left: 16px; flex: 1; max-width: 360px; height: 24px; border-radius: 6px;
+  background: #fff; font: 12px/24px var(--font); color: #888; padding: 0 10px;
+}
+.browser-scroll { overflow-x: auto; }
+.browser-body { min-width: 860px; }
+
+/* ---------- 规则卡片 ---------- */
+.rules { display: grid; gap: 16px; margin-top: 24px; }
+.rule {
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 20px 24px;
+  display: grid; grid-template-columns: 44px 1fr; gap: 0 16px;
+}
+.rule > :not(.rn) { grid-column: 2; }
+.rule .rn {
+  grid-column: 1; grid-row: 1 / span 4;
+  width: 36px; height: 36px; border-radius: 10px; background: var(--accent-soft); color: var(--accent);
+  font-weight: 700; font-size: 16px; line-height: 36px; text-align: center;
+}
+.rule h3 { margin-bottom: 4px; }
+.rule p { margin: 0 0 8px; color: var(--text-2); font-size: 15px; line-height: 1.7; }
+.rule .measure { font-size: 14px; color: var(--text); margin: 0 0 6px; }
+.rule .measure b { font-weight: 600; }
+.rule .src { font-size: 13px; color: var(--text-3); margin: 0; }
+.rule .src a { color: var(--text-3); }
+.rule .src a:hover { color: var(--accent); }
+
+/* ---------- 底部 ---------- */
+.next {
+  margin-top: 72px; padding: 28px; border-radius: 20px;
+  background: var(--surface); border: 1px solid var(--line);
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;
+}
+.next p { margin: 0; color: var(--text-2); }
+.next h3 { margin: 0 0 4px; font-size: 18px; }
+.btn-primary {
+  display: inline-block; text-decoration: none;
+  background: var(--accent); color: #fff;
+  font-weight: 600; font-size: 15px; padding: 10px 20px; border-radius: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .btn-primary { color: #0e1230; }
+}
+
+.refs { margin-top: 56px; font-size: 14px; color: var(--text-2); }
+.refs h2 { font-size: 16px; margin-bottom: 8px; }
+.refs ul { padding-left: 18px; margin: 0; }
+.refs li { margin-bottom: 4px; }
+
+/* ---------- 窄屏 ---------- */
+@media (max-width: 860px) {
+  .pair { grid-template-columns: minmax(0, 1fr); justify-items: center; }
+}
+@media (max-width: 600px) {
+  .page { padding: 32px 16px 72px; }
+  h1 { font-size: 30px; }
+  .demo { padding: 16px; border-radius: 16px; }
+  .rule { grid-template-columns: 1fr; padding: 18px; }
+  .rule > :not(.rn) { grid-column: 1; }
+  .rule .rn { grid-row: auto; margin-bottom: 10px; }
+  :root { --device-zoom: 0.72; }
+}
+@media (max-width: 380px) {
+  :root { --device-zoom: 0.66; }
+}
