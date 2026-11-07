@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 2 课 · 文字</title>
+<link rel="stylesheet" href="../../assets/lesson.css">
+<style>
+  /* 01 四个变量 */
+  .vars { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 24px; }
+  .var .paper { height: 132px; display: flex; flex-direction: column; justify-content: center; gap: 4px; overflow: hidden; }
+  .var h3 { margin: 12px 0 2px; }
+  .var p { font-size: 14px; color: var(--text-2); margin: 0; line-height: 1.65; }
+  .lh-box { font-size: 15px; line-height: 2; background: repeating-linear-gradient(#fff 0 30px, #eef2ff 30px 60px); padding: 0 6px; border-radius: 6px; }
+  .measure-line { font-size: 14px; white-space: nowrap; border-bottom: 2px solid #3451d1; padding-bottom: 4px; position: relative; }
+  .measure-line::after { content: "行宽"; position: absolute; left: 50%; bottom: -22px; transform: translateX(-50%); font-size: 12px; color: #3451d1; }
+
+  /* 02 字阶样张 */
+  .specimen td.ex { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", sans-serif; color: var(--text); white-space: nowrap; }
+
+  /* 03 动态字体演示 */
+  .dt { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 40px; align-items: start; margin-top: 24px; }
+  .dt .device { --device-zoom: 0.72; zoom: var(--device-zoom); }
+  .dt-screen { background: #fff; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", sans-serif; color: #000; }
+  .dt-title { font-size: var(--lt); line-height: var(--lt-lh); font-weight: 700; padding: 6px 16px 10px; }
+  .dt-list { padding: 0 16px; overflow: hidden; }
+  .dt-row { padding: 12px 0; border-bottom: 0.5px solid rgba(60,60,67,.29); }
+  .dt-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .dt-name { font-size: var(--hl); line-height: var(--hl-lh); font-weight: 600; min-width: 0; }
+  .dt-time { font-size: var(--fn); line-height: var(--fn-lh); color: #6e6e73; white-space: nowrap; }
+  .dt-msg { font-size: var(--sh); line-height: var(--sh-lh); color: #6e6e73; margin-top: 2px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .dt-screen.stacked .dt-top { flex-direction: column; align-items: flex-start; gap: 2px; }
+  .dt-panel label { display: block; font-weight: 600; margin-bottom: 8px; }
+  .dt-panel input[type=range] { width: 100%; accent-color: var(--accent); }
+  /* 刻度按真实档位定位：第 i 档在 i/11 处 */
+  .dt-ticks { position: relative; height: 18px; font-size: 12px; color: var(--text-3); margin-top: 4px; }
+  .dt-ticks span { position: absolute; left: calc(var(--i) / 11 * 100%); transform: translateX(-50%); white-space: nowrap; }
+  .dt-ticks span:first-child { transform: none; }
+  .dt-ticks span:last-child { transform: translateX(-100%); }
+  .dt-read { margin: 18px 0; padding: 14px 16px; background: var(--surface-2); border-radius: 12px; font-size: 15px; font-variant-numeric: tabular-nums; }
+  .dt-read b { font-size: 20px; }
+
+  /* 04 字重 */
+  .weights { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 24px; }
+  .wt { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; color: #1c1c1e; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", sans-serif; }
+  .wt .s { font-size: 22px; line-height: 1.3; }
+  .wt .n { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #6e6e73; margin-top: 6px; font-weight: 400; }
+  .wt.avoid { opacity: .7; }
+
+  /* 05 行高 / 06 行宽 */
+  .para { font-size: 15px; color: #1c1c1e; margin: 0; }
+  .widths { display: grid; gap: 16px; margin-top: 24px; }
+  .widths .para { font-size: 14px; line-height: 1.7; }
+
+  /* 07 数字 */
+  .nums { font-size: 20px; line-height: 1.5; text-align: right; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; }
+  .nums.tab { font-variant-numeric: tabular-nums; }
+  .timer { font-size: 34px; font-weight: 600; text-align: center; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; padding: 8px 0; }
+  .timer.tab { font-variant-numeric: tabular-nums; }
+
+  .checklist { list-style: none; padding: 0; margin: 20px 0 0; }
+  .checklist li { position: relative; padding: 12px 0 12px 26px; border-bottom: 1px solid var(--line); }
+  .checklist li:last-child { border-bottom: 0; }
+  .checklist li::before { content: ""; position: absolute; left: 6px; top: 23px; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+
+  @media (max-width: 860px) {
+    .vars { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .dt { grid-template-columns: minmax(0, 1fr); justify-items: center; }
+    .dt-panel { justify-self: stretch; }
+    .weights { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 600px) {
+    .dt .device { --device-zoom: 0.66; }
+  }
+</style>
+</head>
+<body>
+<main class="page">
+
+  <nav class="crumb"><a href="../../index.html">← 课程目录</a></nav>
+
+  <header class="prose">
+    <p class="eyebrow">第 2 课 / 共 9 课</p>
+    <h1>文字：字号、字重、行高、行宽</h1>
+    <p class="lead">界面上大部分信息都是文字。控制文字的变量只有几个，这一课把每个变量的标准答案、出处和道理讲清楚。</p>
+    <p class="meta">约 20 分钟 · 纯讲解</p>
+  </header>
+
+  <!-- 01 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">01</span>文字的四个变量</h2>
+      <p>第 1 课说过，文字由四个变量控制。颜色留到第 3 课，这一课讲另外三个，再加上排版时同样重要的<b>行宽</b>：</p>
+    </div>
+    <div class="vars">
+      <div class="var">
+        <div class="paper"><span style="font-size:13px">字号 13</span><span style="font-size:17px">字号 17</span><span style="font-size:28px;line-height:1.2">字号 28</span></div>
+        <h3>字号</h3><p>字有多大，决定能不能看清。</p>
+      </div>
+      <div class="var">
+        <div class="paper"><span style="font-size:17px;font-weight:400">常规 Regular</span><span style="font-size:17px;font-weight:600">半粗 Semibold</span><span style="font-size:17px;font-weight:700">粗 Bold</span></div>
+        <h3>字重</h3><p>字有多粗，用来区分主次。</p>
+      </div>
+      <div class="var">
+        <div class="paper"><div class="lh-box">第一行文字<br>第二行文字</div></div>
+        <h3>行高</h3><p>一行占多高，决定换行时会不会串行。</p>
+      </div>
+      <div class="var">
+        <div class="paper" style="padding-bottom:28px"><div class="measure-line">一行有多宽，决定眼睛要扫多远</div></div>
+        <h3>行宽</h3><p>一行有多长，决定读完一行要扫多远。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">02</span>字号：用一套"字阶"，不要一个个挑</h2>
+      <p>好的界面不会每处文字单独决定字号，而是先定一套<b>字阶</b>（type scale）：一组固定的字号，每一级有明确用途。这就是第 1 课说的"先定清单，再从清单里挑"。</p>
+      <p>iOS 自带一套字阶，叫<b>文本样式</b>。下面是苹果官方给的默认值，示例文字就是按实际 pt 大小画的：</p>
+    </div>
+    <div class="spec-wrap">
+      <table class="spec specimen">
+        <thead><tr><th>样式</th><th>字号 / 行高</th><th>字重</th><th>常见用法</th><th>示例</th></tr></thead>
+        <tbody>
+          <tr><td>Large Title</td><td class="num">34 / 41</td><td>常规</td><td>页面大标题</td><td class="ex" style="font-size:34px;line-height:41px">信息</td></tr>
+          <tr><td>Title 1</td><td class="num">28 / 34</td><td>常规</td><td>区块标题</td><td class="ex" style="font-size:28px;line-height:34px">本周概览</td></tr>
+          <tr><td>Title 2</td><td class="num">22 / 28</td><td>常规</td><td>次级标题</td><td class="ex" style="font-size:22px;line-height:28px">最近订单</td></tr>
+          <tr><td>Title 3</td><td class="num">20 / 25</td><td>常规</td><td>小标题</td><td class="ex" style="font-size:20px;line-height:25px">收货信息</td></tr>
+          <tr><td>Headline</td><td class="num">17 / 22</td><td>半粗</td><td>列表行标题、强调</td><td class="ex" style="font-size:17px;line-height:22px;font-weight:600">张三</td></tr>
+          <tr class="hl"><td>Body</td><td class="num">17 / 22</td><td>常规</td><td><b>正文（默认字号）</b></td><td class="ex" style="font-size:17px;line-height:22px">明天上午十点开会</td></tr>
+          <tr><td>Callout</td><td class="num">16 / 21</td><td>常规</td><td>说明文字</td><td class="ex" style="font-size:16px;line-height:21px">开启后会同步到所有设备</td></tr>
+          <tr><td>Subhead</td><td class="num">15 / 20</td><td>常规</td><td>次要信息</td><td class="ex" style="font-size:15px;line-height:20px">预计 11 月 8 日送达</td></tr>
+          <tr><td>Footnote</td><td class="num">13 / 18</td><td>常规</td><td>脚注、分组说明</td><td class="ex" style="font-size:13px;line-height:18px">最近 30 天的数据</td></tr>
+          <tr><td>Caption 1</td><td class="num">12 / 16</td><td>常规</td><td>图注、时间</td><td class="ex" style="font-size:12px;line-height:16px">昨天 21:34</td></tr>
+          <tr><td>Caption 2</td><td class="num">11 / 13</td><td>常规</td><td>最小的辅助文字</td><td class="ex" style="font-size:11px;line-height:13px">已读</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="cite">字号、行高、字重：Apple HIG · Typography，iOS Dynamic Type 默认档（Large）表格。"常见用法"一列是惯例，不是官方规定。</p>
+    <div class="prose">
+      <div class="callout">
+        <p><b>两个要记住的数字</b>：iOS 正文默认 <b>17pt</b>，最小 <b>11pt</b>。这是 HIG 的原话："Follow the recommended default and minimum text sizes for each platform"。比 11 还小的字，规范就不建议用了。</p>
+      </div>
+      <h3>其他平台的"正文字号"</h3>
+      <ul>
+        <li><b>Android（Material 3）</b>：Body Large 16sp、Body Medium 14sp、Body Small 12sp。sp 和 iOS 的 pt 一样，会跟随用户的字体大小设置。</li>
+        <li><b>网页</b>：大多数浏览器的默认字号是 16px。</li>
+        <li><b>后台类网页（Ant Design）</b>：基础字号 14px。信息密度高的表格界面，正文会比手机小一号。</li>
+      </ul>
+      <p>同一个平台内，字阶的级数也要克制。Ant Design 的建议是：一个系统里"字阶的选择尽量控制在 3～5 种之间"。第 5 课讲视觉层级时还会用到这条。</p>
+    </div>
+  </section>
+
+  <!-- 03 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">03</span>用户会调字号：动态字体</h2>
+      <p>上面那张表只是默认档。iOS 用户可以在"设置 → 辅助功能 → 显示与文字大小 → 更大字体"里调字号，这叫<b>动态字体</b>（Dynamic Type）。一共 12 档：7 个标准档，再加 5 个辅助功能档（AX1～AX5）。正文从最小档的 14pt 到最大档的 53pt。</p>
+      <p>拖动下面的滑块，看看同一个列表在不同档位下的样子。所有字号都按苹果官方的表格取值：</p>
+    </div>
+    <div class="dt">
+      <div class="device"><div class="screen dt-screen" id="dt-screen">
+        <div class="statusbar" data-ignore><span>9:41</span><span class="island"></span><span class="icons"></span></div>
+        <div class="dt-title">信息</div>
+        <div class="dt-list">
+          <div class="dt-row"><div class="dt-top"><span class="dt-name">李雷</span><span class="dt-time">上午 9:41</span></div><div class="dt-msg">周五的评审改到下午三点了，记得把原型图带上，我们先过一遍首页。</div></div>
+          <div class="dt-row"><div class="dt-top"><span class="dt-name">韩梅梅</span><span class="dt-time">昨天</span></div><div class="dt-msg">收到，我晚上把新版的图标发你，颜色按上次说的改深了一点。</div></div>
+          <div class="dt-row"><div class="dt-top"><span class="dt-name">设计小组</span><span class="dt-time">星期三</span></div><div class="dt-msg">王芳：间距统一成 8 的倍数之后，整体干净多了。</div></div>
+          <div class="dt-row"><div class="dt-top"><span class="dt-name">快递通知</span><span class="dt-time">星期二</span></div><div class="dt-msg">您的包裹已到达驿站，请凭取件码 3-2-1108 领取。</div></div>
+        </div>
+        <div class="home-indicator"></div>
+      </div></div>
+      <div class="dt-panel">
+        <label for="dt-range">文字大小：<span id="dt-name">Large（默认）</span></label>
+        <input type="range" id="dt-range" min="0" max="11" step="1" value="3">
+        <div class="dt-ticks"><span style="--i:0">xSmall</span><span style="--i:3">默认</span><span style="--i:6">xxxLarge</span><span style="--i:11">AX5</span></div>
+        <div class="dt-read" id="dt-read"></div>
+        <p>留意三件事：</p>
+        <ol>
+          <li><b>层级始终保持</b>：名字永远比消息预览大、比时间粗。HIG 要求放大后"maintain the relative hierarchy"。</li>
+          <li><b>拖到 AX 档时布局变了</b>：时间从名字右边挪到了名字下面。HIG 原话是：大字号时考虑改成上下堆叠的布局，避免文字被截断或互相重叠。</li>
+          <li><b>不是所有东西都要等比放大</b>：HIG 也说，用户调大字号是想看清自己关心的内容，不一定希望每个字都变大。</li>
+        </ol>
+      </div>
+    </div>
+    <div class="prose">
+      <div class="callout">
+        <p><b>对写代码的意义</b>：SwiftUI 里用 <code>.font(.body)</code>、<code>.font(.headline)</code> 这类文本样式，字号会自动跟随用户设置；写死 <code>.font(.system(size: 17))</code> 就不会。确实需要自定义字号时，可以用 <code>@ScaledMetric</code> 或 <code>Font.custom(_:size:relativeTo:)</code> 让它跟着缩放。网页同理：字号用 <code>rem</code>，不要把根字号写死成 px，才能尊重用户在浏览器里设的字号。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">04</span>字重：两三种就够了</h2>
+      <p>系统字体从极细（Ultralight）到特粗（Black）一共 9 个字重。实际界面里用到的，通常只有 2～3 个：</p>
+    </div>
+    <div class="weights">
+      <div class="wt avoid"><div class="s" style="font-weight:100">设置 Settings 128</div><div class="n"><span>100 · Ultralight</span><span class="tag exp">官方建议避免</span></div></div>
+      <div class="wt avoid"><div class="s" style="font-weight:200">设置 Settings 128</div><div class="n"><span>200 · Thin</span><span class="tag exp">官方建议避免</span></div></div>
+      <div class="wt avoid"><div class="s" style="font-weight:300">设置 Settings 128</div><div class="n"><span>300 · Light</span><span class="tag exp">官方建议避免</span></div></div>
+      <div class="wt"><div class="s" style="font-weight:400">设置 Settings 128</div><div class="n"><span>400 · Regular</span><span class="tag std">正文</span></div></div>
+      <div class="wt"><div class="s" style="font-weight:500">设置 Settings 128</div><div class="n"><span>500 · Medium</span><span class="tag std">可用</span></div></div>
+      <div class="wt"><div class="s" style="font-weight:600">设置 Settings 128</div><div class="n"><span>600 · Semibold</span><span class="tag std">强调</span></div></div>
+      <div class="wt"><div class="s" style="font-weight:700">设置 Settings 128</div><div class="n"><span>700 · Bold</span><span class="tag std">大标题</span></div></div>
+      <div class="wt"><div class="s" style="font-weight:800">设置 Settings 128</div><div class="n"><span>800 · Heavy</span></div></div>
+      <div class="wt"><div class="s" style="font-weight:900">设置 Settings 128</div><div class="n"><span>900 · Black</span></div></div>
+    </div>
+    <div class="prose" style="margin-top:24px">
+      <ul>
+        <li><b>苹果 HIG</b>：一般情况下避免细字重，优先用 Regular、Medium、Semibold、Bold；Ultralight、Thin、Light 在小字号下尤其难看清。</li>
+        <li><b>iOS 文本样式</b>：上面字阶表里，除了 Headline 是半粗，其他都是常规。需要强调时，官方给的"强调字重"是：Large Title、Title 1、Title 2 用 Bold，其余用 Semibold。</li>
+        <li><b>Ant Design</b>：多数情况下只用两种，常规（400）和中等（500）。</li>
+      </ul>
+      <p>结论很一致：<b>正文常规，强调半粗，大标题粗体</b>。字重种类越少，每一次加粗才越有分量。</p>
+      <p class="cite">出处：Apple HIG · Typography（"In general, avoid light font weights"，以及 Dynamic Type 表的 Emphasized weight 列）；Ant Design · 字体。</p>
+    </div>
+  </section>
+
+  <!-- 05 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">05</span>行高：给眼睛换行的轨道</h2>
+      <p><b>行高 = 字号 + 行距</b>。行距是两行文字之间的空白。行高太小，眼睛换行时容易跳错行；太大，一段话就散成了一行一行，不像一个整体。同一段文字，只改行高：</p>
+    </div>
+    <div class="samples" style="--cols:4">
+      <div class="sample"><div class="cap"><span>行高 1.2</span><span class="verdict no">太挤</span></div><p class="para paper" style="line-height:1.2">界面上的文字和书本不同：用户很少逐字读完，更多是在扫。行高决定眼睛换行时会不会串行，行宽决定读完一行要扫多远。</p></div>
+      <div class="sample"><div class="cap"><span>行高 1.5</span><span class="verdict ok">合适</span></div><p class="para paper" style="line-height:1.5">界面上的文字和书本不同：用户很少逐字读完，更多是在扫。行高决定眼睛换行时会不会串行，行宽决定读完一行要扫多远。</p></div>
+      <div class="sample"><div class="cap"><span>行高 1.75</span><span class="verdict ok">合适</span></div><p class="para paper" style="line-height:1.75">界面上的文字和书本不同：用户很少逐字读完，更多是在扫。行高决定眼睛换行时会不会串行，行宽决定读完一行要扫多远。</p></div>
+      <div class="sample"><div class="cap"><span>行高 2.4</span><span class="verdict no">太散</span></div><p class="para paper" style="line-height:2.4">界面上的文字和书本不同：用户很少逐字读完，更多是在扫。行高决定眼睛换行时会不会串行，行宽决定读完一行要扫多远。</p></div>
+    </div>
+    <div class="prose" style="margin-top:28px">
+      <h3>该取多少？几个来源放在一起看</h3>
+    </div>
+    <div class="spec-wrap">
+      <table class="spec">
+        <thead><tr><th>来源</th><th>给的数</th><th>换算成倍数</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>Apple HIG（iOS 正文）</td><td class="num">17pt 字 / 22pt 行高</td><td class="num">约 1.29</td><td>系统字体自带的行高，针对的主要是西文字形</td></tr>
+          <tr><td>W3C《中文排版需求》</td><td>行距多半介于字号的 50%～100%</td><td class="num">1.5～2.0</td><td>针对印刷书籍的版心</td></tr>
+          <tr><td>Ant Design</td><td class="num">14px 字 / 22px 行高</td><td class="num">约 1.57</td><td>中文后台界面</td></tr>
+          <tr><td>WCAG 1.4.8（AAA 级）</td><td>段落内行距至少"一倍半"</td><td class="num">≥ 1.5</td><td>无障碍的最高一级建议，不是底线</td></tr>
+          <tr><td>web.dev</td><td>示例用 1.5，文章用 1.65</td><td class="num">1.5～1.65</td><td>Google 的网页排版课程</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="prose">
+      <div class="callout">
+        <p><b>综合下来</b>：中文正文的行高取 <b>1.5～1.8</b> 倍比较稳妥 <span class="tag exp">综合上表的经验值</span>。iOS 系统字体的 1.29 看起来偏紧，是因为它主要按西文字形设计；如果在 App 里放大段中文（文章、说明），可以适当加大行距。HIG 也说过：大段文字用宽松行距（loose leading），空间受限的列表行可以紧一点，但三行以上的文字不要用紧行距。</p>
+      </div>
+      <p><b>网页小技巧</b>：<code>line-height</code> 写不带单位的数字（比如 <code>1.6</code>），不要写 <code>24px</code>，这样字号变了行高会按比例跟着变。这是 web.dev 的建议。</p>
+    </div>
+  </section>
+
+  <!-- 06 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">06</span>行宽：一行不要太长</h2>
+      <p>行太长，读到行尾再找下一行的开头很吃力，容易串行；行太短，换行太频繁，句子被切得零零碎碎。同一段文字，三种行宽：</p>
+    </div>
+    <div class="widths">
+      <div class="sample"><div class="cap"><span>每行约 12 字</span><span class="verdict no">太短，频繁换行</span></div><p class="para paper" style="max-width:13.5em">界面上的文字和书本不同：用户很少逐字读完，更多是在扫。行高决定眼睛换行时会不会串行，行宽决定读完一行要扫多远。这几个数字调对了，同样的内容会显得清爽好读。</p></div>
+      <div class="sample"><div class="cap"><span>每行约 30 字</span><span class="verdict ok">合适</span></div><p class="para paper" style="max-width:31.5em">界面上的文字和书本不同：用户很少逐字读完，更多是在扫。行高决定眼睛换行时会不会串行，行宽决定读完一行要扫多远。这几个数字调对了，同样的内容会显得清爽好读。</p></div>
+      <div class="sample"><div class="cap"><span>不限宽度（宽屏上一行 60 多字）</span><span class="verdict no">太长，容易串行</span></div><p class="para paper">界面上的文字和书本不同：用户很少逐字读完，更多是在扫。行高决定眼睛换行时会不会串行，行宽决定读完一行要扫多远。这几个数字调对了，同样的内容会显得清爽好读。</p></div>
+    </div>
+    <div class="spec-wrap">
+      <table class="spec">
+        <thead><tr><th>来源</th><th>建议</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>W3C《中文排版需求》</td><td>书籍正文多在每行 <b>17～40 字</b>；横排最多不宜超过 48 字，最少不宜少于 10 字</td><td>针对印刷书籍，"作为参考值"</td></tr>
+          <tr><td>WCAG 1.4.8（AAA 级）</td><td>每行不超过 80 个字符，<b>中日韩文字不超过 40 个</b></td><td>无障碍的最高一级建议</td></tr>
+          <tr><td>Baymard Institute</td><td>西文每行 50～75 个字符</td><td>常被引用，但也有人指出这更像约定俗成，研究结论并不一致</td></tr>
+          <tr><td>web.dev</td><td>西文约 66 个字符，用 <code>max-inline-size: 66ch</code> 限制</td><td>引自排版学者 Bringhurst</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="prose">
+      <ul>
+        <li><b>手机上一般不用操心</b>：393pt 宽的屏幕减去两边各 16pt 的边距，17pt 的正文一行大约 21 个汉字，天然落在合适的范围里。</li>
+        <li><b>网页上要主动限宽</b>：给正文容器设最大宽度。中文用 <code>em</code> 最直观，因为 1em 大约就是一个汉字宽；<code>max-width: 40em</code> 就是每行最多 40 字。用 em 而不是 px，用户调大字号时行宽也会跟着变。</li>
+      </ul>
+      <div class="callout">
+        <p><b>就在眼前的例子</b>：你正在读的这门课，正文容器就是 <code>max-width: 40em</code>，每行最多 40 个汉字。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 07 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">07</span>中文和数字的几个细节</h2>
+      <h3>中英文之间加空格</h3>
+      <p>"在iOS26中"和"在 iOS 26 中"，后者更好读。这是《中文文案排版指北》（GitHub 上很流行的中文排版规范）的第一条：中文和英文、数字之间加一个空格；品牌名按官方写法，比如"豆瓣FM"。W3C《中文排版需求》说的是同一件事：汉字和西文、数字之间留"不多于四分之一个汉字宽"的空隙。</p>
+      <h3>标点不出现在不该出现的地方</h3>
+      <p>W3C《中文排版需求》里的"行首行尾禁则"：逗号、句号、顿号、问号这类点号，以及结束引号、结束括号，<b>不能出现在一行的开头</b>；开始引号、开始括号<b>不能出现在一行的结尾</b>。看界面时如果发现某一行以逗号开头，就是排版出了问题。</p>
+      <h3>会变的数字要等宽</h3>
+      <p>系统字体里，数字默认宽窄不一，"1"比"8"窄。一列金额竖着排就对不齐，计时器跳动时整行会左右抖。打开<b>等宽数字</b>（tabular figures）就解决了：</p>
+    </div>
+    <div class="samples" style="--cols:2">
+      <div class="sample"><div class="cap"><span>默认（比例数字）</span><span class="verdict no">对不齐、会抖</span></div>
+        <div class="paper"><div class="nums">¥1,111.11<br>¥8,888.88<br>¥4,701.10</div><div class="timer" id="timer-a">00:00.0</div></div>
+      </div>
+      <div class="sample"><div class="cap"><span>等宽数字</span><span class="verdict ok">竖着对齐、不抖</span></div>
+        <div class="paper"><div class="nums tab">¥1,111.11<br>¥8,888.88<br>¥4,701.10</div><div class="timer tab" id="timer-b">00:00.0</div></div>
+      </div>
+    </div>
+    <div class="prose" style="margin-top:20px">
+      <p>写法：SwiftUI 用 <code>.monospacedDigit()</code>（iOS 15 起），CSS 用 <code>font-variant-numeric: tabular-nums</code>。Ant Design 建议在需要竖向对比数字的后台场景里使用。</p>
+      <h3>字体：用系统字体，种类越少越好</h3>
+      <p>苹果设备上，界面里的西文是 San Francisco，中文是苹方（PingFang SC）。HIG 建议"尽量减少使用的字体种类"，字体混用太多会打乱层级，也显得不统一。网页上同样优先用系统字体，Ant Design 推荐的写法是 <code>-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, …</code> 这样一串，按系统依次取用。</p>
+    </div>
+  </section>
+
+  <!-- 08 -->
+  <section class="prose">
+    <h2><span class="num">08</span>本课要点</h2>
+    <ul class="checklist">
+      <li>字号从一套字阶里挑，一个界面 3～5 种。iOS 正文 17pt，最小 11pt。</li>
+      <li>用系统文本样式（<code>.font(.body)</code>），字号跟随用户的动态字体设置；大字号下布局要能撑开、改成上下堆叠。</li>
+      <li>字重 2～3 种：正文常规，强调半粗，大标题粗体；不用细字重。</li>
+      <li>中文正文行高约 1.5～1.8 倍；网页 <code>line-height</code> 不带单位。</li>
+      <li>中文每行不超过 40 字左右；网页用 <code>max-width: 40em</code> 这类相对单位限宽。</li>
+      <li>中英文之间加空格；标点不出现在行首（点号）或行尾（开引号、开括号）。</li>
+      <li>会变、要竖着比较的数字用等宽数字。</li>
+    </ul>
+  </section>
+
+  <div class="next">
+    <div>
+      <h3>下一课：颜色</h3>
+      <p>中性色、强调色、语义色；灰色为什么要分几级；对比度怎么算；暗色模式。</p>
+    </div>
+    <a class="btn-primary" href="../03-color/index.html">继续 →</a>
+  </div>
+
+  <footer class="refs">
+    <h2>参考资料</h2>
+    <ul>
+      <li><a href="https://developer.apple.com/design/human-interface-guidelines/typography" target="_blank" rel="noopener">Apple HIG · Typography</a>（字号表、默认与最小字号、字重、动态字体）</li>
+      <li><a href="https://www.w3.org/TR/clreq/" target="_blank" rel="noopener">W3C · 中文排版需求（clreq）</a>（行长、行距、中西文间距、行首行尾禁则）</li>
+      <li><a href="https://www.w3.org/WAI/WCAG22/Understanding/visual-presentation.html" target="_blank" rel="noopener">WCAG 2.2 · 1.4.8 Visual Presentation（AAA）</a></li>
+      <li><a href="https://ant.design/docs/spec/font-cn" target="_blank" rel="noopener">Ant Design · 字体</a></li>
+      <li><a href="https://github.com/material-components/material-components-android/blob/master/docs/theming/Typography.md" target="_blank" rel="noopener">Material Components · Typography</a>（Material 3 字号表）</li>
+      <li><a href="https://web.dev/learn/design/typography" target="_blank" rel="noopener">web.dev · Typography</a></li>
+      <li><a href="https://baymard.com/blog/line-length-readability" target="_blank" rel="noopener">Baymard · Line Length Readability</a></li>
+      <li><a href="https://github.com/sparanoid/chinese-copywriting-guidelines" target="_blank" rel="noopener">中文文案排版指北</a></li>
+      <li><a href="https://developer.apple.com/documentation/swiftui/text/monospaceddigit()" target="_blank" rel="noopener">SwiftUI · monospacedDigit()</a></li>
+    </ul>
+  </footer>
+
+</main>
+<script src="../../assets/lesson.js"></script>
+<script>
+  // 03 动态字体：数值取自 Apple HIG 的 iOS Dynamic Type 表（字号/行高，单位 pt）
+  (function () {
+    const LEVELS = [
+      ["xSmall", 31, 38, 14, 19, 12, 16, 12, 16],
+      ["Small", 32, 39, 15, 20, 13, 18, 12, 16],
+      ["Medium", 33, 40, 16, 21, 14, 19, 12, 16],
+      ["Large（默认）", 34, 41, 17, 22, 15, 20, 13, 18],
+      ["xLarge", 36, 43, 19, 24, 17, 22, 15, 20],
+      ["xxLarge", 38, 46, 21, 26, 19, 24, 17, 22],
+      ["xxxLarge", 40, 48, 23, 29, 21, 28, 19, 24],
+      ["AX1", 44, 52, 28, 34, 25, 31, 23, 29],
+      ["AX2", 48, 57, 33, 40, 30, 37, 27, 33],
+      ["AX3", 52, 61, 40, 48, 36, 43, 33, 40],
+      ["AX4", 56, 66, 47, 56, 42, 50, 38, 46],
+      ["AX5", 60, 70, 53, 62, 49, 58, 44, 52],
+    ];
+    const screen = document.getElementById("dt-screen");
+    const range = document.getElementById("dt-range");
+    const nameEl = document.getElementById("dt-name");
+    const read = document.getElementById("dt-read");
+    function apply() {
+      const [name, lt, ltl, hl, hll, sh, shl, fn, fnl] = LEVELS[Number(range.value)];
+      const vars = { "--lt": lt, "--lt-lh": ltl, "--hl": hl, "--hl-lh": hll, "--sh": sh, "--sh-lh": shl, "--fn": fn, "--fn-lh": fnl };
+      for (const [k, v] of Object.entries(vars)) screen.style.setProperty(k, v + "px");
+      // 辅助功能档改成上下堆叠，避免名字和时间挤在一行
+      screen.classList.toggle("stacked", Number(range.value) >= 7);
+      nameEl.textContent = name;
+      read.innerHTML = `正文（Body）<b>${hl}pt</b> / 行高 ${hll}pt　·　大标题 ${lt}pt　·　次要 ${sh}pt　·　脚注 ${fn}pt`;
+    }
+    range.addEventListener("input", apply);
+    apply();
+  })();
+
+  // 07 计时器：同样的数字，比例数字会左右抖，等宽数字不会
+  (function () {
+    const a = document.getElementById("timer-a");
+    const b = document.getElementById("timer-b");
+    const start = Date.now();
+    const fmt = (ms) => {
+      const t = Math.floor(ms / 100);
+      const s = Math.floor(t / 10) % 60;
+      const m = Math.floor(t / 600);
+      return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}.${t % 10}`;
+    };
+    setInterval(() => { const s = fmt(Date.now() - start); a.textContent = s; b.textContent = s; }, 100);
+  })();
+</script>
+</body>
+</html>

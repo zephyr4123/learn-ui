@@ -5,3 +5,4 @@
 - [前端 skill 路由](skill-routing-frontend.md) — 网页 UI、动效、手势交互用哪个 skill（impeccable 主导）
 - [通用 skill 路由](skill-routing-general.md) — 密钥、多仓、云运维、Multica、编排、长任务、去 AI 腔用哪个 skill
 - [iOS skill 路由](skill-routing-ios.md) — SwiftUI 视图、iOS 验证闭环用哪个 skill
+- [不确定就搜索](feedback-verify-by-search.md) — 课程内容不确定就联网查，训练数据里的事实也要校验，多参考别人做法；本项目不用多 agent

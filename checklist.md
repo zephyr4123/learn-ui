@@ -16,7 +16,15 @@
 
 ## 2. 文字（第 2 课）
 
-待补充
+- **字阶**：字号从一套固定字阶里挑，一个界面 3～5 种（Ant Design）。iOS 正文 17pt、最小 11pt（HIG）；Android Body Large 16sp；浏览器默认 16px；中文后台常用 14px。
+- **iOS 字阶**：Large Title 34 · Title 1/2/3 28/22/20 · Headline 17 半粗 · Body 17 · Callout 16 · Subhead 15 · Footnote 13 · Caption 12/11。
+- **动态字体**：用文本样式（`.font(.body)`），字号才会跟随用户设置；写死 `.system(size:)` 不会。大字号下布局要能撑开、改成上下堆叠，层级保持不变。
+- **字重**：2～3 种。正文常规、强调半粗、大标题粗体；不用 Ultralight / Thin / Light（HIG）。
+- **行高**：行高 = 字号 + 行距。中文正文约 1.5～1.8 倍（综合 W3C clreq、Ant Design、WCAG 1.4.8）；网页 `line-height` 写不带单位的数。
+- **行宽**：中文每行不超过约 40 字（WCAG 1.4.8 AAA；clreq 书籍 17～40 字、最多 48 字）；西文 50～75 字符（Baymard，约定俗成）。网页用 `max-width: 40em` 这类相对单位限宽。
+- **中文细节**：中英文之间加空格；点号、结束引号括号不在行首，开始引号括号不在行尾（clreq 禁则）。
+- **数字**：会变、要竖着比较的数字用等宽数字（`.monospacedDigit()` / `tabular-nums`）。
+- **字体**：用系统字体（SF + 苹方），种类越少越好。
 
 ## 3. 颜色（第 3 课）
 
