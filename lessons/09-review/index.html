@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 9 课 · 怎么看懂一个界面</title>
+<link rel="stylesheet" href="../../assets/lesson.css">
+<style>
+  /* 商品详情页样张（A 是常见问题集合，B 是按前 8 课改过的版本） */
+  .pd { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; color: #000; background: #f2f2f7; }
+  .pd .nav { height: 44px; display: flex; align-items: center; position: relative; flex: none; }
+  .pd .nav .ttl { position: absolute; left: 50%; transform: translateX(-50%); font-size: 17px; font-weight: 600; white-space: nowrap; }
+  .pd .hit { width: 44px; height: 44px; display: grid; place-items: center; color: #0066cc; }
+  .pd .hit svg { width: 22px; height: 22px; }
+  .pd .hero { height: 280px; margin: 0 16px; border-radius: 16px; background: linear-gradient(150deg, #e9dccd, #d8c2a8 55%, #b8987a); flex: none; }
+  .pd .content { flex: 1; min-height: 0; overflow: hidden; }
+  .pd .card { background: #fff; margin: 12px 16px 0; border-radius: 14px; padding: 14px 16px; }
+  .pd .price-row { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px; }
+  /* 底部留出 34pt 安全区，按钮不被底部横条和圆角压住（第 1、4 课） */
+  .pd .bbar { position: relative; display: flex; align-items: center; gap: 8px; padding: 8px 12px 34px; background: #fff; flex: none; }
+  .pd .ib { display: flex; flex-direction: column; align-items: center; justify-content: center; color: #3c3c43; }
+  .pd .ib svg { display: block; }
+  .pd button { font: inherit; border: 0; cursor: pointer; }
+
+  /* A */
+  .a .nav { padding: 0 12px; }
+  .a .back-t { font-size: 15px; color: #0066cc; }
+  .a .share-s { margin-left: auto; color: #0066cc; display: block; width: 18px; height: 18px; }
+  .a .price { font-size: 20px; font-weight: 700; color: #ff3b30; }
+  .a .orig { font-size: 12px; color: #c7c7cc; text-decoration: line-through; }
+  .a .tag { font-size: 11px; font-weight: 700; color: #fff; padding: 1px 5px; border-radius: 4px; }
+  .a .tag.r { background: #ff3b30; } .a .tag.o { background: #ff9500; } .a .tag.g { background: #34c759; }
+  .a .ptitle { font-size: 16px; font-weight: 700; margin-top: 8px; }
+  .a .psub { font-size: 13px; color: #aeaeb2; margin-top: 4px; }
+  .a .row { display: flex; gap: 8px; padding: 9px 0; font-size: 14px; font-weight: 600; }
+  .a .row .k { color: #8e8e93; }
+  .a .bbar .ib { width: 32px; font-size: 10px; gap: 1px; }
+  .a .bbar .ib svg { width: 18px; height: 18px; }
+  .a .bbar button { flex: 1; height: 40px; border-radius: 20px; color: #fff; font-size: 15px; font-weight: 700; }
+  .a .b-cart { background: #ff9500; } .a .b-buy { background: #ff3b30; }
+
+  /* B */
+  .b .price { font-size: 28px; font-weight: 600; color: #c4161c; line-height: 1.1; }
+  .b .orig { font-size: 13px; color: #6e6e73; text-decoration: line-through; }
+  .b .tag { font-size: 13px; font-weight: 600; color: #c4161c; background: rgba(196, 22, 28, .08); padding: 1px 6px; border-radius: 5px; }
+  .b .ptitle { font-size: 17px; font-weight: 600; margin-top: 8px; }
+  .b .psub { font-size: 15px; color: #6e6e73; margin-top: 2px; }
+  .b .row { display: flex; align-items: center; padding: 11px 0; font-size: 15px; border-bottom: .5px solid rgba(60, 60, 67, .2); }
+  .b .row:last-child { border-bottom: 0; }
+  .b .row .k { width: 44px; flex: none; color: #6e6e73; }
+  .b .row .v { flex: 1; }
+  .b .row .chev { color: #6e6e73; font-size: 15px; line-height: 1; }
+  .b .card.rows { padding-top: 2px; padding-bottom: 2px; }
+  .b .bbar .ib { width: 44px; height: 44px; font-size: 11px; gap: 2px; color: #6e6e73; }
+  .b .bbar .ib svg { width: 22px; height: 22px; }
+  .b .bbar button { flex: 1; height: 44px; border-radius: 22px; font-size: 17px; font-weight: 600; }
+  .b .b-cart { background: rgba(196, 22, 28, .1); color: #c4161c; }
+  .b .b-buy { background: #c4161c; color: #fff; }
+
+  .findings { width: 100%; border-collapse: collapse; font-size: 14px; line-height: 1.6; }
+  .findings th, .findings td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+  .findings th { font-size: 13px; color: var(--text-2); font-weight: 600; white-space: nowrap; }
+  .findings td.n { font-weight: 700; color: var(--bad); white-space: nowrap; }
+  .sev { display: inline-block; min-width: 22px; text-align: center; font-weight: 700; border-radius: 6px; padding: 0 6px; font-variant-numeric: tabular-nums; }
+  .sev.s3 { background: var(--bad-soft); color: var(--bad); }
+  .sev.s2 { background: #fff4d6; color: #8a5a00; }
+  .sev.s1 { background: var(--surface-2); color: var(--text-2); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .sev.s2 { background: #3a2f12; color: #f0c45a; } }
+
+  .say { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; margin-top: 20px; }
+  .say .sample p { margin: 0; font-size: 15px; line-height: 1.75; }
+  @media (max-width: 860px) { .say { grid-template-columns: minmax(0, 1fr); } }
+</style>
+</head>
+<body>
+<main class="page">
+
+  <nav class="crumb"><a href="../../index.html">← 课程目录</a></nav>
+
+  <header class="prose">
+    <p class="eyebrow">第 9 课 / 共 9 课</p>
+    <h1>怎么看懂一个界面</h1>
+    <p class="lead">最后一课不讲新知识，而是把前 8 课串成一套<b>固定的看法</b>：拿到一个界面，按什么顺序看，每一步量什么，看出问题后怎么说清楚、怎么排先后。</p>
+    <p class="meta">约 25 分钟 · 纯讲解</p>
+  </header>
+
+  <!-- 01 -->
+  <section class="prose">
+    <h2><span class="num">01</span>先回答开头的问题："好看"能不能量</h2>
+    <p>这门课一开始的问题是：美到底怎么定义、能不能衡量。学完前 8 课，可以给一个分两层的回答。</p>
+    <p><b>能量的那一层</b>，是"有规律"和"看得清"：字号用了几种、主次差了几倍；颜色几种、对比度多少；间距是不是都来自一张清单、对齐边缘几条；可点区域多大；醒目按钮几个。这些都有数字，很多还有标准（WCAG、HIG）。</p>
+    <p><b>要判断的那一层</b>，是"有没有为任务服务"：最重要的东西是不是最先被看到，分组是不是符合内容的关系，导航是不是用对了组件。这一层没有一个数能算出来，但有稳定的判断依据，就是前面各课讲的原则。</p>
+    <p>还有一个值得知道的现象：NN/g 介绍过的<b>"美观-可用性效应"</b>。1995 年日立设计中心的研究者用 26 个版本的 ATM 界面测试了 252 人，发现人们会觉得好看的产品更好用，哪怕它并没有更好用。这说明两件事：好看确实有价值；但评审时不能被"好看"带过去，好看的界面也可能藏着问题，要按步骤一项项查。</p>
+  </section>
+
+  <!-- 02 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">02</span>八步看法：每一步对应一课</h2>
+      <p>顺序是从大到小：先确认目标和整体层级，再量零件，最后看结构和动态。前面的步骤有问题，后面的细节改了也救不回来。</p>
+      <ol class="steps">
+        <li><b>目标</b>：用户打开这一页，最想看到或最想做的是什么？先用一句话说出来。（第 5 课）</li>
+        <li><b>眯眼</b>：把界面模糊掉，最先跳出来的是不是第 1 步说的那个东西？（第 5 课）</li>
+        <li><b>量文字</b>：字号几种、主次落差够不够、加粗多不多、有没有小于 11pt 的字、能不能跟随动态字体。（第 2 课）</li>
+        <li><b>量颜色</b>：颜色几种、各有什么用途、文字对比度达不达标、有没有只靠颜色传达的信息、深色模式行不行。（第 3 课）</li>
+        <li><b>量间距和对齐</b>：分组对不对（组内紧、组间松）、间距是否来自同一张清单、左边缘几条、可点区域够不够 44pt。（第 4 课）</li>
+        <li><b>查组件和状态</b>：按钮主次、圆角是否同心、图标是否一致；按下、禁用、加载、空、出错这些状态有没有设计。（第 6 课）</li>
+        <li><b>查结构</b>：标签栏、导航栈、弹窗用对了吗？返回路径清楚吗？（第 7 课）</li>
+        <li><b>查动态</b>：动画时长、减弱动态效果、等待时有没有反馈。（第 8 课）</li>
+      </ol>
+      <p>每一步的具体数字都收在<a href="../../checklist.md">要点速查</a>里。无障碍不是单独一步，而是贯穿在每一步里：对比度在第 4 步，可点区域在第 5 步，动态字体在第 3 步，减弱动态效果在第 8 步。</p>
+    </div>
+  </section>
+
+  <!-- 03 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">03</span>完整走一遍：商品详情页</h2>
+      <p>下面是同一个商品详情页的两个版本。A 集中了很多常见问题，B 是按前 8 课改过的。按八步来看：</p>
+      <p><b>第 1 步，目标</b>：用户来商品详情页，是想弄清"这是什么、多少钱"，然后决定买不买。所以最先该看到的是<b>商品和价格</b>，最醒目的操作是<b>购买</b>。</p>
+      <p><b>第 2 步，眯眼</b>：点"眯眼测试"。再点"度量"，第 3～6 步里能自动量的数字（字号、颜色、醒目按钮、对比度）会由浏览器现场算出来。</p>
+    </div>
+
+    <div class="demo is-anno">
+      <div class="demo-controls">
+        <button type="button" data-action="squint">眯眼测试</button>
+        <button type="button" data-action="anno">显示标注</button>
+        <button type="button" data-action="metrics">度量</button>
+      </div>
+      <p class="squint-hint">模糊之后：A 里最先跳出来的是底部一橙一红两个大按钮，以及价格旁边的三个彩色小标签，价格本身被它们分散了；B 里先看到商品图和价格，然后是唯一的实心按钮"立即购买"。</p>
+
+      <div class="pair">
+        <!-- 版本 A -->
+        <div class="frame" data-version="版本 A" data-kind="bad">
+          <div class="frame-tag">版本 A</div>
+          <div class="device"><div class="screen">
+            <div class="statusbar" data-ignore><span>9:41</span><span class="island"></span><span class="icons"></span></div>
+            <div class="screen-body pd a">
+              <div class="nav" data-anno="1" data-anno-pos="end">
+                <span class="back-t">‹ 返回</span>
+                <span class="ttl">山野咖啡官方旗舰店</span>
+                <svg class="share-s" viewBox="0 0 22 22" aria-label="分享"><path d="M11 3v11M7 7l4-4 4 4M5 12v6.5h12V12" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="content">
+                <div class="hero"></div>
+                <div class="card">
+                  <div class="price-row" data-anno="2" data-anno-pos="end"><span class="price">¥59</span><span class="orig">¥89</span><span class="tag r">限时</span><span class="tag o">包邮</span><span class="tag g">新品</span></div>
+                  <div class="ptitle">挂耳咖啡 · 云南小粒 10 包装</div>
+                  <div class="psub" data-anno="3" data-anno-pos="end">中度烘焙 · 坚果与焦糖风味 · 月销 2000+</div>
+                </div>
+                <div class="card" data-anno="4" data-anno-pos="edge">
+                  <div class="row"><span class="k">规格</span><span>请选择</span></div>
+                  <div class="row"><span class="k">配送</span><span>上海 · 预计明天送达</span></div>
+                  <div class="row"><span class="k">服务保障</span><span>7 天无理由退货</span></div>
+                </div>
+              </div>
+              <div class="bbar" data-anno="5" data-anno-pos="edge">
+                <span class="ib"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9l1.5-5h13L20 9M4 9v11h16V9M4 9h16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>店铺</span>
+                <span class="ib"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>客服</span>
+                <span class="ib"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.2-7-9.3A3.9 3.9 0 0 1 12 8.3a3.9 3.9 0 0 1 7 2.4C19 15.8 12 20 12 20z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>收藏</span>
+                <button type="button" class="b-cart">加入购物车</button>
+                <button type="button" class="b-buy">立即购买</button>
+              </div>
+            </div>
+            <div class="home-indicator" data-ignore></div>
+          </div></div>
+          <ol class="notes">
+            <li data-n="1">返回写成了"返回"文字；标题用了店铺名，长而且不说明这是哪一页；分享图标只有 18pt，可点区域也只有这么大。</li>
+            <li data-n="2">红、橙、绿三个实心标签和红色价格挤在一起，彩色太多，谁都不突出；橙、绿底上的白字对比度只有 2 左右。</li>
+            <li data-n="3">副标题和划线原价用了很浅的灰，对比度只有 1.7～2.2:1，户外几乎看不清。</li>
+            <li data-n="4">标签和值之间、行与行之间一样宽；值紧跟在标签后面，三行的值各自从不同位置开始，左边缘参差；标签和值全部加粗。</li>
+            <li data-n="5">两个实心按钮一样醒目，白字在橙底上对比度不足；左边三个小图标的文字只有 10pt，可点区域约 32pt 宽。</li>
+          </ol>
+        </div>
+
+        <!-- 版本 B -->
+        <div class="frame" data-version="版本 B" data-kind="good">
+          <div class="frame-tag">版本 B</div>
+          <div class="device"><div class="screen">
+            <div class="statusbar" data-ignore><span>9:41</span><span class="island"></span><span class="icons"></span></div>
+            <div class="screen-body pd b">
+              <div class="nav" data-anno="1" data-anno-pos="end">
+                <span class="hit" aria-label="返回"><svg viewBox="0 0 22 22" aria-hidden="true"><path d="M14 4l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                <span class="ttl">商品详情</span>
+                <span class="hit" aria-label="分享" style="margin-left:auto"><svg viewBox="0 0 22 22" aria-hidden="true"><path d="M11 3v11M7 7l4-4 4 4M5 12v6.5h12V12" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              </div>
+              <div class="content">
+                <div class="hero"></div>
+                <div class="card">
+                  <div class="price-row" data-anno="2" data-anno-pos="end"><span class="price">¥59</span><span class="orig">¥89</span><span class="tag">限时 6.6 折</span></div>
+                  <div class="ptitle">挂耳咖啡 · 云南小粒 10 包装</div>
+                  <div class="psub" data-anno="3" data-anno-pos="end">中度烘焙 · 坚果与焦糖风味</div>
+                </div>
+                <div class="card rows" data-anno="4" data-anno-pos="edge">
+                  <div class="row"><span class="k">规格</span><span class="v">请选择口味和数量</span><span class="chev">›</span></div>
+                  <div class="row"><span class="k">配送</span><span class="v">上海 · 预计明天送达</span></div>
+                  <div class="row"><span class="k">服务</span><span class="v">包邮 · 7 天无理由退货</span></div>
+                </div>
+              </div>
+              <div class="bbar" data-anno="5" data-anno-pos="edge">
+                <span class="ib"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9l1.5-5h13L20 9M4 9v11h16V9M4 9h16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>店铺</span>
+                <span class="ib"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>客服</span>
+                <button type="button" class="b-cart">加入购物车</button>
+                <button type="button" class="b-buy">立即购买</button>
+              </div>
+            </div>
+            <div class="home-indicator" data-ignore></div>
+          </div></div>
+          <ol class="notes">
+            <li data-n="1">系统返回符号、简短标题"商品详情"；返回和分享都有 44 × 44pt 的可点区域。</li>
+            <li data-n="2">价格放大到 28pt，是全页最大的字；三个彩色标签合并成一个和价格同色的浅底标签，强调色只剩一种。</li>
+            <li data-n="3">次要文字统一用 #6E6E73（白底 5.07:1）；"月销"这类不影响决策的信息去掉了。</li>
+            <li data-n="4">标签列固定宽度，值从同一条线开始；标签常规字重、灰色，值是主角；规格行加了箭头，表示可以点开。</li>
+            <li data-n="5">"立即购买"是唯一的实心按钮，"加入购物车"用同色浅底；两个按钮一样大。图标按钮 44pt，文字 11pt；"收藏"挪到了商品图右上角（图中未画）。</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="metrics" aria-live="polite"></div>
+    </div>
+
+    <div class="prose" style="margin-top:28px">
+      <p><b>第 3～8 步</b>的发现，整理成一张表。"严重程度"用的是 NN/g 的 0～4 级（下一节讲），评级本身是评审者的判断，这里是示例：</p>
+    </div>
+    <div class="spec-wrap">
+      <table class="findings" style="min-width:680px">
+        <thead><tr><th>#</th><th>现象</th><th>依据</th><th>严重程度</th><th>改法</th></tr></thead>
+        <tbody>
+          <tr><td class="n">3</td><td>副标题、原价、标签文字对比度 1.7～2.2:1</td><td>WCAG 1.4.3 要求 4.5:1（第 3 课）</td><td><span class="sev s3">3</span></td><td>次要文字统一用 #6E6E73；标签改成浅底深字</td></tr>
+          <tr><td class="n">5</td><td>两个实心按钮一样醒目；底部图标文字 10pt、可点区域约 32pt</td><td>HIG：醒目按钮一组只给一个；最小字号 11pt；点击区域 44pt（第 2、4、6 课）</td><td><span class="sev s3">3</span></td><td>"加入购物车"改浅底；图标按钮撑到 44pt，文字 11pt</td></tr>
+          <tr><td class="n">2</td><td>价格旁三种彩色标签，强调色分散</td><td>强调色要少，同色不表达两种意思（第 3 课）</td><td><span class="sev s2">2</span></td><td>合并为一个与价格同色的标签</td></tr>
+          <tr><td class="n">1</td><td>"返回"文字、店铺名当标题、分享图标点击区域小</td><td>HIG：用系统返回符号，标题简短不用 App 或店铺名（第 7 课）</td><td><span class="sev s2">2</span></td><td>系统返回符号；标题"商品详情"；44pt 点击区域</td></tr>
+          <tr><td class="n">4</td><td>信息行全部加粗，值的起点参差</td><td>先弱化再强调（第 5 课）；对齐边缘越少越好（第 4 课）</td><td><span class="sev s1">1</span></td><td>标签固定列宽、常规字重、灰色</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="prose">
+      <p>第 6～8 步在一张静态截图上看不全，评审时要追问：价格加载出来之前显示什么（骨架屏？）；"请选择"点开后是半屏弹窗还是新页面（选规格是临时任务，用半屏弹窗，第 7 课）；"立即购买"点了之后要等多久，按钮有没有加载状态（第 6、8 课）；动态字体调大之后，底部按钮的文字会不会被截断（第 2 课）。</p>
+      <div class="callout">
+        <p><b>关于底部两个实心按钮</b>：一橙一红两个实心按钮是国内电商很常见的做法。从 HIG 的标准看，同一组按钮只给一个醒目样式；选择两个都醒目，意味着偏离了平台惯例，最好有数据支撑（比如 A/B 测试）。评审时要把"偏离了哪条规范"说出来，最后由团队决定。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">04</span>怎么把问题说清楚</h2>
+      <p>评审意见最常见的毛病是只有感受："太乱了"、"不够高级"、"感觉怪怪的"。设计师听完不知道改哪，开发者也没法判断该不该改。每一条意见都可以按四段来说：</p>
+      <ol class="steps">
+        <li><b>现象</b>：具体哪个元素、什么问题。能给数字就给数字。</li>
+        <li><b>依据</b>：违反了哪条规范或原则（WCAG、HIG、这门课的哪一课）。</li>
+        <li><b>影响</b>：会让谁、在什么情况下遇到什么困难。</li>
+        <li><b>改法</b>：给一个具体方向，不一定是唯一答案。</li>
+      </ol>
+    </div>
+    <div class="say">
+      <div class="sample">
+        <div class="cap"><span>只有感受</span><span class="verdict no">没法行动</span></div>
+        <p>"价格那块太花了，看着不舒服，副标题也有点看不清，再调调吧。"</p>
+      </div>
+      <div class="sample">
+        <div class="cap"><span>现象 · 依据 · 影响 · 改法</span><span class="verdict ok">可以直接改</span></div>
+        <p>"价格旁边有红、橙、绿三个实心标签（现象），强调色太多会互相抵消，而且橙、绿底白字对比度约 2:1，低于 WCAG 的 4.5:1（依据）；用户扫一眼抓不到价格，户外更看不清标签（影响）。建议合并成一个和价格同色的浅底标签（改法）。"</p>
+      </div>
+    </div>
+    <div class="prose" style="margin-top:24px">
+      <p>问题多的时候要排先后。NN/g 的严重程度分级从三个因素判断：<b>频率</b>（常见还是少见）、<b>影响</b>（用户能不能轻松绕过去）、<b>持续性</b>（是一次性的障碍，还是每次都会碰到）。</p>
+    </div>
+    <div class="spec-wrap">
+      <table class="spec">
+        <thead><tr><th>级别</th><th>含义</th></tr></thead>
+        <tbody>
+          <tr><td class="num">0</td><td>我不认为这是可用性问题</td></tr>
+          <tr><td class="num"><span class="sev s1">1</span></td><td>纯外观问题：项目有空余时间再修</td></tr>
+          <tr><td class="num"><span class="sev s2">2</span></td><td>小的可用性问题：低优先级</td></tr>
+          <tr><td class="num"><span class="sev s3">3</span></td><td>大的可用性问题：重要，高优先级</td></tr>
+          <tr><td class="num"><span class="sev s3">4</span></td><td>可用性灾难：发布前必须修好</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="cite">出处：NN/g · Severity Ratings for Usability Problems（Jakob Nielsen）。</p>
+  </section>
+
+  <!-- 05 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">05</span>第二把尺子：尼尔森十大可用性原则</h2>
+      <p>八步看法偏重"视觉和结构"。另一把常用的尺子是尼尔森 1994 年提出的十条可用性原则，偏重"用起来顺不顺"。NN/g 在 2024 年复核过，原则本身三十年没变。用它逐条过一遍界面，叫<b>启发式评估</b>：</p>
+    </div>
+    <div class="spec-wrap">
+      <table class="spec" style="min-width:600px">
+        <thead><tr><th>#</th><th>原则</th><th>一句话</th><th>这门课里</th></tr></thead>
+        <tbody>
+          <tr><td class="num">1</td><td>系统状态可见</td><td>及时告诉用户正在发生什么</td><td>第 6 课状态、第 8 课等待反馈</td></tr>
+          <tr><td class="num">2</td><td>贴近现实世界</td><td>用用户熟悉的语言和习惯</td><td>第 6 课说人话的错误提示</td></tr>
+          <tr><td class="num">3</td><td>用户可控、可退出</td><td>有明显的撤销、取消、返回</td><td>第 7 课返回按钮、弹窗的取消</td></tr>
+          <tr><td class="num">4</td><td>一致性和标准</td><td>产品内一致，并遵守平台惯例</td><td>贯穿全课；第 7 课标签栏、导航栏</td></tr>
+          <tr><td class="num">5</td><td>预防错误</td><td>用约束、好的默认值、确认来防止出错</td><td>第 6 课校验时机、第 7 课提示框</td></tr>
+          <tr><td class="num">6</td><td>识别而非回忆</td><td>让选项和信息看得见，不用记</td><td>第 6 课输入框标签放框外</td></tr>
+          <tr><td class="num">7</td><td>灵活高效</td><td>给熟手快捷方式，不让新手变复杂</td><td>第 7 课手势是按钮的快捷方式</td></tr>
+          <tr><td class="num">8</td><td>美观、简约</td><td>去掉无关信息，让重要内容突出</td><td>第 5 课视觉层级</td></tr>
+          <tr><td class="num">9</td><td>帮用户识别、诊断、恢复错误</td><td>用平实语言说明问题并给出办法</td><td>第 6 课错误提示</td></tr>
+          <tr><td class="num">10</td><td>帮助和文档</td><td>帮助要好找、针对任务，最好就在当前场景里</td><td>第 6 课空状态里的"顺便教一下"</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="cite">原则名称为本课翻译，英文原名见 NN/g · 10 Usability Heuristics for User Interface Design。</p>
+  </section>
+
+  <!-- 06 -->
+  <section class="prose">
+    <h2><span class="num">06</span>在 Xcode 里顺手检查</h2>
+    <p>写 iOS 时，八步里有好几步可以直接在运行中的 App 上查。Xcode 调试栏里有一个<b>环境覆盖</b>（Environment Overrides）按钮，苹果文档的说明是：用来预览界面风格、文字大小和辅助功能设置对布局的影响。可以切换：</p>
+    <ul>
+      <li><b>外观</b>：浅色、深色（第 3 课）；</li>
+      <li><b>动态字体</b>：用滑块调字号，看布局会不会被撑破（第 2 课）；</li>
+      <li><b>辅助功能</b>：提高对比度、减弱动态效果等（第 3、8 课）。</li>
+    </ul>
+    <p>网页则可以用浏览器开发者工具：模拟 <code>prefers-color-scheme</code> 和 <code>prefers-reduced-motion</code>，查元素的字号、颜色和尺寸。这门课各页的"度量"表，就是用同样的方法从页面上现场读出来的。</p>
+  </section>
+
+  <!-- 07 -->
+  <section class="prose">
+    <h2><span class="num">07</span>全课要点</h2>
+    <ul class="checklist">
+      <li>"好看"的可量部分是有规律、看得清；判断部分是有没有为任务服务。好看会让人觉得好用，所以评审时要按步骤查，不被外观带过去。</li>
+      <li>八步看法：目标 → 眯眼 → 文字 → 颜色 → 间距与对齐 → 组件与状态 → 结构 → 动态。从大到小。</li>
+      <li>静态截图看不到的部分（加载、出错、空、点击之后、大字号），要主动追问。</li>
+      <li>每条意见说清现象、依据、影响、改法；按频率、影响、持续性评严重程度，先修 3、4 级。</li>
+      <li>尼尔森十大原则是第二把尺子，偏重"用起来顺不顺"。</li>
+      <li>偏离平台规范可以，但要说出偏离了哪条、为什么值得。</li>
+    </ul>
+    <p style="margin-top:20px">所有数字和规则都收在<a href="../../checklist.md">要点速查</a>里，以后拿到界面，对着它按八步走一遍就行。</p>
+  </section>
+
+  <div class="next">
+    <div>
+      <h3>课程到这里就结束了</h3>
+      <p>回到目录，可以随时翻回任何一课；速查表里有每课的要点和出处。</p>
+    </div>
+    <a class="btn-primary" href="../../index.html">回到目录</a>
+  </div>
+
+  <footer class="refs">
+    <h2>参考资料</h2>
+    <ul>
+      <li><a href="https://www.nngroup.com/articles/ten-usability-heuristics/" target="_blank" rel="noopener">NN/g · 10 Usability Heuristics for User Interface Design</a></li>
+      <li><a href="https://www.nngroup.com/articles/how-to-rate-the-severity-of-usability-problems/" target="_blank" rel="noopener">NN/g · Severity Ratings for Usability Problems</a></li>
+      <li><a href="https://www.nngroup.com/articles/aesthetic-usability-effect/" target="_blank" rel="noopener">NN/g · The Aesthetic-Usability Effect</a></li>
+      <li><a href="https://developer.apple.com/documentation/xcode/diagnosing-issues-in-the-appearance-of-your-running-app" target="_blank" rel="noopener">Xcode · Diagnosing issues in the appearance of your running app</a>（环境覆盖）</li>
+      <li>八步里每一步的出处，见第 2～8 课页面底部的参考资料。</li>
+    </ul>
+  </footer>
+
+</main>
+<script src="../../assets/lesson.js"></script>
+</body>
+</html>
