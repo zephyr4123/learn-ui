@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 4 课 · 间距与对齐</title>
+<link rel="stylesheet" href="../../assets/lesson.css">
+<style>
+  /* 间距标尺：样张里的间距用 .sp 占位元素实现，打开"显示间距"后标出数值 */
+  .sp { position: relative; flex: none; }
+  .sp.h { align-self: stretch; }
+  .is-gaps .sp { background: rgba(255, 45, 85, .22); }
+  .is-gaps .sp::after {
+    content: attr(data-v); position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+    font: 600 10px/1.3 var(--mono); color: #c2185b; background: #fff; padding: 0 3px; border-radius: 3px; z-index: 1;
+  }
+  .is-gaps .sp.h::after { right: auto; left: 50%; top: -14px; transform: translateX(-50%); }
+
+  /* 01 接近性 */
+  .dots { display: flex; align-items: center; justify-content: center; padding: 18px 0 6px; }
+  .dots i { width: 22px; height: 22px; border-radius: 50%; flex: none; }
+  .dots i:nth-of-type(odd) { background: #3451d1; }
+  .dots i:nth-of-type(even) { background: #f08c00; }
+
+  .kv .k { font-size: 13px; color: #6e6e73; line-height: 1.4; }
+  .kv .v { font-size: 16px; line-height: 1.4; }
+
+  /* 02 间距清单 */
+  .scale { display: grid; gap: 8px; margin-top: 20px; }
+  .scale div { display: grid; grid-template-columns: 44px 1fr; align-items: center; gap: 12px; font-size: 14px; font-variant-numeric: tabular-nums; color: var(--text-2); }
+  .scale b { display: block; height: 14px; background: var(--accent); border-radius: 3px; opacity: .85; }
+
+  .prod .img { height: 96px; border-radius: 10px; background: linear-gradient(135deg, #dfe4f5, #f3e7dc); }
+  .prod .t { font-size: 16px; font-weight: 600; line-height: 1.35; }
+  .prod .s { font-size: 13px; color: #6e6e73; line-height: 1.4; }
+  .prod .p { font-size: 18px; font-weight: 600; color: #c4161c; line-height: 1.3; }
+  .prod .b { display: block; text-align: center; background: #0066cc; color: #fff; border-radius: 10px; padding: 9px 0; font-size: 15px; font-weight: 600; }
+
+  /* 03 内小外大 */
+  .grp-h { font-size: 13px; color: #6e6e73; line-height: 1.3; padding-left: 4px; }
+  .rows { background: #fff; border-radius: 10px; overflow: hidden; }
+  .rows div { display: flex; justify-content: space-between; padding: 11px 14px; font-size: 15px; line-height: 1.3; border-bottom: 0.5px solid rgba(60, 60, 67, .29); }
+  .rows div:last-child { border-bottom: 0; }
+  .rows span { color: #6e6e73; }
+  .paper.grouped { background: #f2f2f7; }
+
+  .acts { display: flex; align-items: center; font-size: 14px; color: #3c3c43; padding: 20px 0 6px; }
+  .acts svg { width: 18px; height: 18px; flex: none; }
+
+  /* 04 对齐线 */
+  .edges { position: relative; }
+  .edge-line { position: absolute; top: 0; bottom: 0; width: 0; border-left: 1px dashed #e8590c; display: none; pointer-events: none; }
+  .is-lines .edge-line { display: block; }
+  .order .shop { font-size: 15px; font-weight: 600; line-height: 1.3; }
+  .order .item { display: flex; align-items: flex-start; }
+  .order .thumb { width: 56px; height: 56px; border-radius: 8px; background: linear-gradient(135deg, #e3e8f8, #f1e6db); flex: none; }
+  .order .title { font-size: 15px; line-height: 1.4; }
+  .order .note { font-size: 13px; color: #6e6e73; line-height: 1.4; }
+  .order .btn { display: inline-block; font-size: 14px; font-weight: 600; color: #0066cc; border: 1px solid #0066cc; border-radius: 999px; padding: 5px 16px; line-height: 1.4; }
+  .order .row-end { display: flex; justify-content: flex-end; font-size: 14px; }
+
+  /* 05 数字表 */
+  .ntable { width: 100%; border-collapse: collapse; font-size: 15px; }
+  .ntable th { font-size: 12px; font-weight: 600; color: #6e6e73; padding: 0 6px 8px; border-bottom: 0.5px solid rgba(60, 60, 67, .29); }
+  .ntable td { padding: 9px 6px; border-bottom: 0.5px solid rgba(60, 60, 67, .12); }
+  .ntable tr:last-child td { border-bottom: 0; }
+  .ntable.bad th, .ntable.bad td { text-align: center; }
+  .ntable.good th, .ntable.good td { text-align: left; }
+  .ntable.good .n { text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* 06 可点区域 */
+  .navbar { display: flex; align-items: center; height: 44px; max-width: 393px; margin: 0 auto; position: relative; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; }
+  .navbar .ttl { position: absolute; left: 50%; transform: translateX(-50%); font-size: 17px; font-weight: 600; pointer-events: none; }
+  .navbar .right { margin-left: auto; display: flex; align-items: center; }
+  .hit { display: flex; align-items: center; justify-content: center; position: relative; flex: none; color: #0066cc; }
+  .hit svg { width: 22px; height: 22px; display: block; }
+  .is-hits .hit { outline: 1.5px dashed #e8590c; outline-offset: -1px; background: rgba(232, 89, 12, .1); }
+  .is-hits .hit::after { content: attr(data-size); position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 4px; font: 600 10px/1.3 var(--mono); color: #e8590c; white-space: nowrap; }
+  .navbar-wrap { padding: 4px 0 22px; }
+
+  @media (max-width: 860px) {
+    .dots i { width: 16px; height: 16px; }
+  }
+</style>
+</head>
+<body>
+<main class="page">
+
+  <nav class="crumb"><a href="../../index.html">← 课程目录</a></nav>
+
+  <header class="prose">
+    <p class="eyebrow">第 4 课 / 共 9 课</p>
+    <h1>间距与对齐：用空白说话</h1>
+    <p class="lead">间距不是"留点空，好看一点"。它在告诉用户<b>哪些东西是一伙的</b>；对齐在告诉用户<b>东西是按什么规矩摆的</b>。这一课讲清这两件事，再讲一个手机上特有的问题：按钮要多大，手指才点得准。</p>
+    <p class="meta">约 25 分钟 · 纯讲解</p>
+  </header>
+
+  <!-- 01 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">01</span>靠得近的，就是一伙的</h2>
+      <p>心理学里有一条叫"接近性"的格式塔原则：<b>靠得近的东西，会被看成一组</b>。尼尔森诺曼集团（NN/g）的文章还指出，接近性的力量强到能压过颜色、形状上的相似。下面这排圆点，颜色是蓝橙交替的，但你一眼看到的是"三组"，而不是"蓝的一类、橙的一类"：</p>
+    </div>
+    <div class="demo">
+      <div class="dots" aria-label="12 个圆点，按间距分成三组">
+        <i></i><span class="sp h" style="width:6px"></span><i></i><span class="sp h" style="width:6px"></span><i></i><span class="sp h" style="width:6px"></span><i></i>
+        <span class="sp h" style="width:40px"></span>
+        <i></i><span class="sp h" style="width:6px"></span><i></i><span class="sp h" style="width:6px"></span><i></i><span class="sp h" style="width:6px"></span><i></i>
+        <span class="sp h" style="width:40px"></span>
+        <i></i><span class="sp h" style="width:6px"></span><i></i><span class="sp h" style="width:6px"></span><i></i><span class="sp h" style="width:6px"></span><i></i>
+      </div>
+    </div>
+    <div class="prose" style="margin-top:24px">
+      <p>放到界面里，这条原则意味着：<b>间距本身就是信息</b>。下面两张"收货信息"用的是完全一样的文字，只有间距不同。打开"显示间距"，可以看到每段空白有多大：</p>
+    </div>
+    <div class="demo">
+      <div class="demo-controls"><button type="button" data-action="gaps">显示间距</button></div>
+      <div class="samples" style="--cols:2;margin-top:0">
+        <div class="sample">
+          <div class="cap"><span>所有间距一样大</span><span class="verdict no">标签该归上还是归下？</span></div>
+          <div class="paper kv">
+            <div class="k">收货人</div><div class="sp" style="height:12px" data-v="12"></div>
+            <div class="v">林小满</div><div class="sp" style="height:12px" data-v="12"></div>
+            <div class="k">手机号</div><div class="sp" style="height:12px" data-v="12"></div>
+            <div class="v">138 0013 8000</div><div class="sp" style="height:12px" data-v="12"></div>
+            <div class="k">收货地址</div><div class="sp" style="height:12px" data-v="12"></div>
+            <div class="v">上海市徐汇区漕溪北路 88 号 3 楼</div>
+          </div>
+        </div>
+        <div class="sample">
+          <div class="cap"><span>组内紧、组间松</span><span class="verdict ok">一眼看出三组</span></div>
+          <div class="paper kv">
+            <div class="k">收货人</div><div class="sp" style="height:4px" data-v="4"></div>
+            <div class="v">林小满</div><div class="sp" style="height:20px" data-v="20"></div>
+            <div class="k">手机号</div><div class="sp" style="height:4px" data-v="4"></div>
+            <div class="v">138 0013 8000</div><div class="sp" style="height:20px" data-v="20"></div>
+            <div class="k">收货地址</div><div class="sp" style="height:4px" data-v="4"></div>
+            <div class="v">上海市徐汇区漕溪北路 88 号 3 楼</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="prose" style="margin-top:24px">
+      <p>左边每段空白都是 12，"手机号"这个标签离上面的"林小满"和下面的号码一样远，眼睛得靠读内容才能配对。右边标签和它的值只隔 4，组与组之间隔 20，<b>还没读字，结构就已经出来了</b>。</p>
+      <p>苹果 HIG 的布局一章也是这个意思："把相关的东西放在一组"，并给了三种分组工具：<b>留白、容器（卡片、背景块）、分割线</b>。</p>
+    </div>
+  </section>
+
+  <!-- 02 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">02</span>间距从一张短清单里挑：8pt 网格</h2>
+      <p>第 1 课说过，"好看"的第一层答案是有规律：字号、颜色、间距都只从一张短清单里挑。间距的清单，业内最常见的是 <b>8 的倍数</b>，叫"8pt 网格"（安卓叫 8dp）：</p>
+    </div>
+    <div class="scale" aria-label="常用间距">
+      <div><span>4</span><b style="width:4%"></b></div>
+      <div><span>8</span><b style="width:8%"></b></div>
+      <div><span>12</span><b style="width:12%"></b></div>
+      <div><span>16</span><b style="width:16%"></b></div>
+      <div><span>24</span><b style="width:24%"></b></div>
+      <div><span>32</span><b style="width:32%"></b></div>
+      <div><span>48</span><b style="width:48%"></b></div>
+    </div>
+    <div class="prose" style="margin-top:20px">
+      <p>这套做法从哪来、各家怎么定的：</p>
+    </div>
+    <div class="spec-wrap">
+      <table class="spec">
+        <thead><tr><th>出处</th><th>怎么规定的</th></tr></thead>
+        <tbody>
+          <tr><td>Material Design（谷歌）</td><td>2014 年第一版就写明"所有组件对齐 8dp 的方形网格"，工具栏图标这类小东西对齐 4dp 网格。<span class="tag std">官方</span></td></tr>
+          <tr><td>Ant Design（蚂蚁）</td><td>"网格的基数为 8"；页面上下方向的间距分小、中、大三档：<b>8、16、24</b>，不够用就按 8 的倍数加。<span class="tag std">官方</span></td></tr>
+          <tr><td>Apple HIG</td><td><b>没有规定网格</b>。iOS 自己的尺寸也不全是 8 的倍数：导航栏 44pt、底部安全区 34pt、正文 17pt。HIG 只在无障碍一章给了控件周围的建议留白（见第 06 节）。</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="prose">
+      <p>为什么偏偏是 8？常见的解释是：8 能被 2 连续整除三次，在 1.5 倍、2 倍、3 倍的屏幕上换算成物理像素都是整数（8 × 1.5 = 12），不会出现半个像素的模糊边。需要更细的时候用 4。<span class="tag exp">常见解释</span></p>
+      <p>但要记住重点：<b>网格的价值不在"8"这个数，而在"只从清单里挑"</b>。苹果没用 8pt 网格，界面照样整齐，因为它的尺寸同样是一套固定的数。下面两张商品卡，差别只在间距，打开"显示间距"看看：</p>
+    </div>
+    <div class="demo">
+      <div class="demo-controls"><button type="button" data-action="gaps">显示间距</button></div>
+      <div class="samples" style="--cols:2;margin-top:0">
+        <div class="sample">
+          <div class="cap"><span>随手写的间距</span><span class="verdict no">7、14、6、20，说不出为什么</span></div>
+          <div class="paper prod" style="padding:13px 18px">
+            <div class="img"></div><div class="sp" style="height:7px" data-v="7"></div>
+            <div class="t">降噪蓝牙耳机 Pro</div><div class="sp" style="height:14px" data-v="14"></div>
+            <div class="s">主动降噪 · 续航 30 小时</div><div class="sp" style="height:6px" data-v="6"></div>
+            <div class="p">¥ 899</div><div class="sp" style="height:20px" data-v="20"></div>
+            <span class="b">加入购物车</span>
+          </div>
+        </div>
+        <div class="sample">
+          <div class="cap"><span>从 4 / 12 / 16 里挑</span><span class="verdict ok">每个数都有理由</span></div>
+          <div class="paper prod">
+            <div class="img"></div><div class="sp" style="height:12px" data-v="12"></div>
+            <div class="t">降噪蓝牙耳机 Pro</div><div class="sp" style="height:4px" data-v="4"></div>
+            <div class="s">主动降噪 · 续航 30 小时</div><div class="sp" style="height:12px" data-v="12"></div>
+            <div class="p">¥ 899</div><div class="sp" style="height:16px" data-v="16"></div>
+            <span class="b">加入购物车</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="prose" style="margin-top:24px">
+      <p>左边的问题不只是"数字不整"。标题和副标题隔了 14，副标题和价格却只隔 6，于是副标题看起来和价格是一伙的，接近性讲错了关系。右边的数字有规律：<b>4 = 同一件事的两行，12 = 相邻的不同信息，16 = 隔开操作区</b>。每个数都能说出理由，这就是"有规律"。</p>
+    </div>
+  </section>
+
+  <!-- 03 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">03</span>内小外大</h2>
+      <p>上一节已经出现了一条规律，业内常把它写成<b>"内部间距 ≤ 外部间距"</b>：一个整体里面的空白，要小于它和外面其他东西之间的空白，否则它会"散架"，或者和邻居"粘"在一起。这是<span class="tag exp">经验法则</span>，不是哪家的正式标准，但它就是接近性原则的直接推论。最常见的两个场景：</p>
+      <h3>场景一：分组标题</h3>
+      <p>分组标题属于它下面的内容，所以它离下面要近，离上一组要远。左边上下一样远，标题像是夹在两组中间：</p>
+    </div>
+    <div class="demo">
+      <div class="demo-controls"><button type="button" data-action="gaps">显示间距</button></div>
+      <div class="samples" style="--cols:2;margin-top:0">
+        <div class="sample">
+          <div class="cap"><span>标题上下一样远</span><span class="verdict no">标题归属不清</span></div>
+          <div class="paper grouped">
+            <div class="grp-h">通知</div><div class="sp" style="height:16px" data-v="16"></div>
+            <div class="rows"><div>新消息提醒<span>开</span></div><div>声音<span>默认</span></div></div>
+            <div class="sp" style="height:16px" data-v="16"></div>
+            <div class="grp-h">隐私</div><div class="sp" style="height:16px" data-v="16"></div>
+            <div class="rows"><div>谁可以加我<span>所有人</span></div><div>黑名单<span>2 人</span></div></div>
+          </div>
+        </div>
+        <div class="sample">
+          <div class="cap"><span>离自己的内容近</span><span class="verdict ok">一眼看出各管哪组</span></div>
+          <div class="paper grouped">
+            <div class="grp-h">通知</div><div class="sp" style="height:6px" data-v="6"></div>
+            <div class="rows"><div>新消息提醒<span>开</span></div><div>声音<span>默认</span></div></div>
+            <div class="sp" style="height:28px" data-v="28"></div>
+            <div class="grp-h">隐私</div><div class="sp" style="height:6px" data-v="6"></div>
+            <div class="rows"><div>谁可以加我<span>所有人</span></div><div>黑名单<span>2 人</span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="prose" style="margin-top:24px">
+      <p>iOS"设置"里的分组列表就是右边这样：分组标题紧贴在它那组上方，组和组之间留一大段空。网页文章也一样，<code>h2</code> 的上边距通常明显大于下边距。</p>
+      <h3>场景二：图标和它的文字</h3>
+      <p>图标配文字是一个整体。图标和文字之间的距离，必须小于这一对和下一对之间的距离：</p>
+    </div>
+    <div class="demo">
+      <div class="demo-controls"><button type="button" data-action="gaps">显示间距</button></div>
+      <div class="samples" style="--cols:2;margin-top:0">
+        <div class="sample">
+          <div class="cap"><span>内外一样宽</span><span class="verdict no">"128"是谁的？</span></div>
+          <div class="paper">
+            <div class="acts">
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 17s-6.5-3.9-6.5-8.6A3.6 3.6 0 0 1 10 6.2a3.6 3.6 0 0 1 6.5 2.2C16.5 13.1 10 17 10 17Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+              <span class="sp h" style="width:12px" data-v="12"></span><span>128</span><span class="sp h" style="width:12px" data-v="12"></span>
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3.5 4.5h13v9h-8l-3.5 3v-3H3.5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+              <span class="sp h" style="width:12px" data-v="12"></span><span>36</span><span class="sp h" style="width:12px" data-v="12"></span>
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v10M6 7l4-4 4 4M4 12v4.5h12V12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span class="sp h" style="width:12px" data-v="12"></span><span>分享</span>
+            </div>
+          </div>
+        </div>
+        <div class="sample">
+          <div class="cap"><span>内 4、外 24</span><span class="verdict ok">三对一目了然</span></div>
+          <div class="paper">
+            <div class="acts">
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 17s-6.5-3.9-6.5-8.6A3.6 3.6 0 0 1 10 6.2a3.6 3.6 0 0 1 6.5 2.2C16.5 13.1 10 17 10 17Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+              <span class="sp h" style="width:4px" data-v="4"></span><span>128</span><span class="sp h" style="width:24px" data-v="24"></span>
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3.5 4.5h13v9h-8l-3.5 3v-3H3.5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+              <span class="sp h" style="width:4px" data-v="4"></span><span>36</span><span class="sp h" style="width:24px" data-v="24"></span>
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v10M6 7l4-4 4 4M4 12v4.5h12V12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span class="sp h" style="width:4px" data-v="4"></span><span>分享</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="prose" style="margin-top:24px">
+      <div class="callout">
+        <p><b>先用留白，再考虑线</b>：HIG 列出的三种分组工具里，留白最轻。MIT 的界面设计课有一节就叫"留白避免视觉噪声"，举的是信息设计大师 Tufte 的例子：去掉柱状图上的格线，改用空白来示意。所以分组时先试试拉开间距；间距不够用，再加卡片背景或分割线。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">04</span>对齐：边缘越少越整齐</h2>
+      <p>HIG 对对齐的说法是："对齐让界面整洁有序，方便视线扫描。人们会认为对齐的东西彼此相关，缩进的东西从属于它上面那一项。"</p>
+      <p>MIT 的界面设计课总结得更短：<b>"对齐的位置越少，设计越简单。"</b>每多一条不同的边缘，眼睛就要多找一次起点。下面两张订单卡内容一样，打开"显示对齐线"，橙色虚线是每个元素的左边缘，数一数各有几条：</p>
+    </div>
+    <div class="demo">
+      <div class="demo-controls"><button type="button" data-action="lines">显示对齐线</button></div>
+      <div class="samples" style="--cols:2;margin-top:0">
+        <div class="sample">
+          <div class="cap"><span>各摆各的</span><span class="verdict no edge-count"></span></div>
+          <div class="paper order edges">
+            <div class="shop" data-edge>山野咖啡旗舰店</div>
+            <div style="height:12px"></div>
+            <div class="item" style="padding-left:6px">
+              <div class="thumb" data-edge></div>
+              <div style="margin-left:10px">
+                <div class="title" data-edge>挂耳咖啡 · 云南小粒 10 包</div>
+              </div>
+            </div>
+            <div style="height:6px"></div>
+            <div class="note" style="margin-left:20px" data-edge>含运费险 · 预计明天送达</div>
+            <div style="height:12px"></div>
+            <div style="text-align:center"><span class="btn" data-edge>再来一单</span></div>
+          </div>
+        </div>
+        <div class="sample">
+          <div class="cap"><span>共用边缘</span><span class="verdict ok edge-count"></span></div>
+          <div class="paper order edges">
+            <div class="shop" data-edge>山野咖啡旗舰店</div>
+            <div style="height:12px"></div>
+            <div class="item">
+              <div class="thumb" data-edge></div>
+              <div style="margin-left:12px">
+                <div class="title" data-edge>挂耳咖啡 · 云南小粒 10 包</div>
+                <div style="height:4px"></div>
+                <div class="note" data-edge>含运费险 · 预计明天送达</div>
+              </div>
+            </div>
+            <div style="height:12px"></div>
+            <div><span class="btn" data-edge>再来一单</span></div>
+          </div>
+        </div>
+      </div>
+      <p class="cite">左边缘条数由浏览器现场量出各元素的左边位置算得（相差 1px 以内算同一条）。</p>
+    </div>
+    <div class="prose" style="margin-top:24px">
+      <p>右边只有两条边：店名、缩略图、按钮共用最左边的一条；商品名和说明共用缩略图右边的一条，这条"缩进"正好表达了"这两行是在描述这件商品"。左边多出来的边，每一条都是随手偏了几个像素造成的，没有表达任何意思。</p>
+      <p><b>居中也是一种对齐</b>。左边的按钮单独居中，就又多了一条"中线"。按钮可以居中，但要有理由，比如整张卡片的内容都是居中排的。</p>
+    </div>
+  </section>
+
+  <!-- 05 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">05</span>表格里的对齐：文字靠左，数字靠右</h2>
+      <p>表格和列表是对齐最见功力的地方。设计师 Matthew Ström 在《Design better data tables》里给的头两条规则是：</p>
+      <ul>
+        <li><b>数字靠右对齐</b>。比较数字大小是从个位开始对的，靠右能让个位、十位、百位上下对齐，一眼看出谁大。前提是小数位数一致。</li>
+        <li><b>文字靠左对齐</b>，和阅读方向一致。</li>
+        <li>表头跟着这一列的对齐方式走；数字再配上等宽数字（第 2 课讲过）。</li>
+      </ul>
+    </div>
+    <div class="samples" style="--cols:2">
+      <div class="sample">
+        <div class="cap"><span>全部居中</span><span class="verdict no">看不出哪笔最大</span></div>
+        <div class="paper">
+          <table class="ntable bad">
+            <thead><tr><th>商品</th><th>数量</th><th>金额</th></tr></thead>
+            <tbody>
+              <tr><td>挂耳咖啡</td><td>2</td><td>¥ 58.00</td></tr>
+              <tr><td>手冲壶套装</td><td>1</td><td>¥ 1,299.00</td></tr>
+              <tr><td>滤纸</td><td>10</td><td>¥ 8.50</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="sample">
+        <div class="cap"><span>文字靠左、数字靠右</span><span class="verdict ok">位数对齐，大小立现</span></div>
+        <div class="paper">
+          <table class="ntable good">
+            <thead><tr><th>商品</th><th class="n">数量</th><th class="n">金额</th></tr></thead>
+            <tbody>
+              <tr><td>挂耳咖啡</td><td class="n">2</td><td class="n">¥ 58.00</td></tr>
+              <tr><td>手冲壶套装</td><td class="n">1</td><td class="n">¥ 1,299.00</td></tr>
+              <tr><td>滤纸</td><td class="n">10</td><td class="n">¥ 8.50</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="prose" style="margin-top:24px">
+      <p>例外：日期、手机号、订单号这类"不比大小"的数字，靠左靠右都可以。iOS 的列表也遵循同样的逻辑：左边是名称，右边是当前的值，"设置"里大多数行都是这样排的。第 5 课的网页后台订单表里金额靠右，也是这个原因。</p>
+    </div>
+  </section>
+
+  <!-- 06 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">06</span>可点区域：看起来小，点起来要大</h2>
+      <p>手机上的间距还有一个硬约束：手指比鼠标粗。按钮太小、挨得太近，就会点错。各家的数字：</p>
+    </div>
+    <div class="spec-wrap">
+      <table class="spec">
+        <thead><tr><th>出处</th><th>可点区域</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr class="hl"><td>Apple HIG（iOS）</td><td class="num"><b>44 × 44 pt</b><br>最小 28 × 28 pt</td><td>无障碍一章：默认 44、最小 28；按钮一章："点击区域至少 44 × 44 pt"</td></tr>
+          <tr><td>Material Design</td><td class="num">48 × 48 dp</td><td>约合 9 毫米，"无论屏幕多大"</td></tr>
+          <tr><td>WCAG 2.2 · 2.5.8（AA）</td><td class="num">24 × 24 CSS px</td><td>网页的最低线；更小的目标必须彼此离得够远</td></tr>
+          <tr><td>WCAG 2.2 · 2.5.5（AAA）</td><td class="num">44 × 44 CSS px</td><td>增强级，W3C 建议重要按钮尽量做到</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="prose">
+      <p>HIG 还特别说明：<b>控件之间的间距和尺寸一样重要</b>。有边框、有底板的控件，周围留约 12pt；没有边框的（比如纯图标、纯文字按钮），可见边缘周围留约 24pt。</p>
+      <p>关键在于：<b>可点区域不等于看得见的大小</b>。导航栏上的图标只有二十来 pt，但它的可点区域应该是 44 × 44。打开"显示可点区域"对比：</p>
+    </div>
+    <div class="demo">
+      <div class="demo-controls"><button type="button" data-action="hits">显示可点区域</button></div>
+      <div class="samples" style="--cols:2;margin-top:0">
+        <div class="sample">
+          <div class="cap"><span>只有图标那么大</span><span class="verdict no">22 × 22，还挨得很近</span></div>
+          <div class="paper navbar-wrap">
+            <div class="navbar">
+              <span class="hit" data-size="22" style="width:22px;height:22px;margin-left:8px"><svg viewBox="0 0 22 22" aria-hidden="true"><path d="M14 4l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="ttl">订单详情</span>
+              <span class="right">
+                <span class="hit" data-size="22" style="width:22px;height:22px"><svg viewBox="0 0 22 22" aria-hidden="true"><path d="M11 3v11M7 7l4-4 4 4M5 12v6.5h12V12" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                <span style="width:8px"></span>
+                <span class="hit" data-size="22" style="width:22px;height:22px;margin-right:8px"><svg viewBox="0 0 22 22" aria-hidden="true"><circle cx="5" cy="11" r="1.8" fill="currentColor"/><circle cx="11" cy="11" r="1.8" fill="currentColor"/><circle cx="17" cy="11" r="1.8" fill="currentColor"/></svg></span>
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="sample">
+          <div class="cap"><span>图标不变，区域放大</span><span class="verdict ok">每个 44 × 44</span></div>
+          <div class="paper navbar-wrap">
+            <div class="navbar">
+              <span class="hit" data-size="44×44" style="width:44px;height:44px"><svg viewBox="0 0 22 22" aria-hidden="true"><path d="M14 4l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="ttl">订单详情</span>
+              <span class="right">
+                <span class="hit" data-size="44×44" style="width:44px;height:44px"><svg viewBox="0 0 22 22" aria-hidden="true"><path d="M11 3v11M7 7l4-4 4 4M5 12v6.5h12V12" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                <span class="hit" data-size="44×44" style="width:44px;height:44px"><svg viewBox="0 0 22 22" aria-hidden="true"><circle cx="5" cy="11" r="1.8" fill="currentColor"/><circle cx="11" cy="11" r="1.8" fill="currentColor"/><circle cx="17" cy="11" r="1.8" fill="currentColor"/></svg></span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="prose" style="margin-top:24px">
+      <p><b>对写代码的意义</b>：用系统的导航栏、工具栏按钮，可点区域系统已经处理好了。自己画的小按钮，要把点击范围撑大，而不是把图标放大：</p>
+<pre class="code">// SwiftUI：图标保持原大小，点击范围撑到 44 × 44
+Button(action: share) {
+    Image(systemName: "square.and.arrow.up")
+        .frame(minWidth: 44, minHeight: 44)
+        .contentShape(Rectangle())   // 空白处也算点中
+}
+
+/* 网页：用 padding 或最小尺寸撑大，而不是放大图标 */
+.icon-btn {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-grid;
+  place-items: center;   /* 图标在区域里居中 */
+}</pre>
+    </div>
+  </section>
+
+  <!-- 07 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">07</span>iOS 的边距和安全区：交给系统</h2>
+      <p>第 1 课画过 iPhone 页面的骨架：顶部安全区、左右边距、底部安全区。这些数字有一个共同点：<b>不要写死，让系统给</b>。</p>
+      <ul>
+        <li><b>安全区</b>：HIG 的定义是"窗口里没被硬件或其他视图遮住的区域"，比如灵动岛、状态栏、标签栏、底部横条。内容和按钮要放在安全区里；背景色、背景图可以铺满整屏。SwiftUI 默认就把内容排在安全区内，背景要铺满时用 <code>.ignoresSafeArea()</code>。</li>
+        <li><b>左右边距</b>：UIKit 会给页面的根视图强制一个"最小边距"，但苹果文档没有写成固定数字，只说可以从 <code>systemMinimumLayoutMargins</code> 读到。实测在 iPhone 上一般是 16 或 20pt，随机型变化。<span class="tag exp">实测值</span></li>
+        <li><b>SwiftUI 的 <code>.padding()</code></b>：不写数字时，官方文档说用的是"随平台而定的默认值"，iPhone 上常见是 16pt。需要精确时写明数字。</li>
+        <li><b>正文限宽</b>：HIG 提到系统有专门的布局参考线，用来"限制文字宽度以便阅读"（UIKit 里叫 <code>readableContentGuide</code>），在 iPad 这种宽屏上尤其有用，和第 2 课讲的行宽是一回事。</li>
+      </ul>
+      <p>网页没有系统替你管边距，要自己定：手机上左右留 16px 左右是常见做法<span class="tag exp">经验</span>，宽屏上用 <code>max-width</code> 把内容收在中间。</p>
+    </div>
+  </section>
+
+  <!-- 08 -->
+  <section class="prose">
+    <h2><span class="num">08</span>本课要点</h2>
+    <ul class="checklist">
+      <li>间距表达关系：靠得近的会被看成一组（接近性），它的力量能压过颜色和形状。组内紧、组间松。</li>
+      <li>间距从固定清单里挑。最常见的是 8 的倍数（Material 8dp，Ant Design 8 / 16 / 24），细处用 4。苹果没规定网格，关键是"有规律"而不是"8"。</li>
+      <li>内部间距 ≤ 外部间距：分组标题离自己的内容近、离上一组远；图标离自己的文字近、离下一对远。</li>
+      <li>分组先用留白，不够再加容器（卡片、背景）或分割线。</li>
+      <li>对齐的边缘越少越整齐；缩进表示从属；居中也算一条对齐线。</li>
+      <li>表格里文字靠左、数字靠右，表头跟随列；数字用等宽数字。</li>
+      <li>可点区域：iOS 44 × 44pt（最小 28），Material 48dp，网页至少 24px（AA），重要按钮 44px。可点区域可以比图标大。</li>
+      <li>安全区、系统边距交给系统，不写死数字。</li>
+    </ul>
+  </section>
+
+  <div class="next">
+    <div>
+      <h3>下一课：视觉层级</h3>
+      <p>把文字、颜色、间距组合起来，决定用户先看什么、后看什么。</p>
+    </div>
+    <a class="btn-primary" href="../05-hierarchy/index.html">继续 →</a>
+  </div>
+
+  <footer class="refs">
+    <h2>参考资料</h2>
+    <ul>
+      <li><a href="https://developer.apple.com/design/human-interface-guidelines/layout" target="_blank" rel="noopener">Apple HIG · Layout</a>（对齐、分组、安全区、布局参考线）</li>
+      <li><a href="https://developer.apple.com/design/human-interface-guidelines/accessibility" target="_blank" rel="noopener">Apple HIG · Accessibility</a>（控件尺寸与间距） · <a href="https://developer.apple.com/design/human-interface-guidelines/buttons" target="_blank" rel="noopener">Buttons</a></li>
+      <li><a href="https://developer.apple.com/documentation/uikit/positioning-content-within-layout-margins" target="_blank" rel="noopener">UIKit · Positioning content within layout margins</a> · <a href="https://developer.apple.com/documentation/swiftui/view/padding(_:_:)" target="_blank" rel="noopener">SwiftUI · padding(_:_:)</a></li>
+      <li><a href="https://www.nngroup.com/articles/gestalt-proximity/" target="_blank" rel="noopener">NN/g · Proximity Principle in Visual Design</a></li>
+      <li><a href="https://m1.material.io/layout/metrics-keylines.html" target="_blank" rel="noopener">Material Design（2014 版）· Metrics &amp; keylines</a>（8dp 网格、48dp 点击区域）</li>
+      <li><a href="https://ant.design/docs/spec/layout-cn" target="_blank" rel="noopener">Ant Design · 布局</a> · <a href="https://ant.design/docs/spec/proximity-cn" target="_blank" rel="noopener">亲密性</a></li>
+      <li><a href="https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html" target="_blank" rel="noopener">WCAG 2.2 · 2.5.8 Target Size (Minimum)</a></li>
+      <li><a href="https://web.mit.edu/6.813/www/sp18/classes/14-layout/" target="_blank" rel="noopener">MIT 6.813 · Layout</a>（对齐位置、留白与分组）</li>
+      <li><a href="https://mattstromawn.com/writing/tables/" target="_blank" rel="noopener">Matthew Ström · Design better data tables</a></li>
+      <li><a href="https://cieden.com/book/sub-atomic/spacing/spacing-best-practices" target="_blank" rel="noopener">Cieden · Spacing best practices</a>（内部 ≤ 外部）</li>
+    </ul>
+  </footer>
+
+</main>
+<script src="../../assets/lesson.js"></script>
+<script>
+  // 04 对齐线：量出每个样张里 [data-edge] 元素的左边缘，去重后画虚线并计数
+  function drawEdges() {
+    document.querySelectorAll(".edges").forEach((box) => {
+      box.querySelectorAll(".edge-line").forEach((l) => l.remove());
+      const b = box.getBoundingClientRect();
+      const xs = [];
+      box.querySelectorAll("[data-edge]").forEach((el) => {
+        const x = el.getBoundingClientRect().left - b.left - box.clientLeft;
+        if (!xs.some((v) => Math.abs(v - x) <= 1)) xs.push(x);
+      });
+      xs.forEach((x) => {
+        const line = document.createElement("i");
+        line.className = "edge-line";
+        line.style.left = x + "px";
+        box.appendChild(line);
+      });
+      const out = box.closest(".sample").querySelector(".edge-count");
+      if (out) out.textContent = `左边缘 ${xs.length} 条`;
+    });
+  }
+  drawEdges();
+  addEventListener("resize", drawEdges);
+  // 字体加载完成后文字宽度会变，居中元素的位置跟着变，重量一次
+  if (document.fonts) document.fonts.ready.then(drawEdges);
+</script>
+</body>
+</html>
