@@ -353,6 +353,12 @@ kbd, code { font-family: var(--mono); font-size: 0.88em; background: var(--surfa
 .cite a { color: var(--text-3); }
 .cite a:hover { color: var(--accent); }
 
+/* 每课末尾的"本课要点"清单 */
+.checklist { list-style: none; padding: 0; margin: 20px 0 0; }
+.checklist li { position: relative; padding: 12px 0 12px 26px; border-bottom: 1px solid var(--line); }
+.checklist li:last-child { border-bottom: 0; }
+.checklist li::before { content: ""; position: absolute; left: 6px; top: 23px; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+
 /* 浅色的"界面样张"：演示的是界面本身，深色模式下也保持浅底 */
 .paper { background: #fff; color: #1c1c1e; border-radius: 12px; border: 1px solid var(--line); padding: 16px; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", sans-serif; }
 

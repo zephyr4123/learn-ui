@@ -6,7 +6,6 @@
 <title>第 3 课 · 颜色</title>
 <link rel="stylesheet" href="../../assets/lesson.css">
 <style>
-  .tool-box { margin-top: 24px; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 24px; }
   .row2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; align-items: start; }
   .slider { margin-bottom: 14px; }
   .slider label { display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-bottom: 4px; }
@@ -26,9 +25,6 @@
   .role p { font-size: 14px; color: var(--text-2); margin: 0; line-height: 1.7; }
 
   /* 系统色板 */
-  .modes { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
-  .modes button { font: inherit; font-size: 14px; padding: 7px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--text); cursor: pointer; }
-  .modes button[aria-pressed="true"] { background: var(--text); color: var(--surface); border-color: var(--text); }
   .palette { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; padding: 16px; border-radius: 16px; transition: background-color .2s; }
   .sw { border-radius: 12px; overflow: hidden; font-size: 12px; line-height: 1.45; }
   .sw i { display: block; height: 52px; }
@@ -56,7 +52,7 @@
   .presets button { font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface-2); color: var(--text); cursor: pointer; }
 
   /* 不要只靠颜色 */
-  .gray-test.is-gray .paper { filter: grayscale(1); }
+  .is-gray .paper { filter: grayscale(1); }
   .status-list { list-style: none; padding: 0; margin: 0; font-size: 15px; }
   .status-list li { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 0.5px solid rgba(60,60,67,.2); }
   .status-list li:last-child { border-bottom: 0; }
@@ -75,11 +71,6 @@
   .mock .t2 { font-size: 15px; margin-top: 2px; }
   .mock .sheet { margin-top: 12px; border-radius: 14px; padding: 12px 16px; font-size: 15px; }
   .mock .btn { display: inline-block; margin-top: 12px; padding: 8px 16px; border-radius: 999px; font-size: 15px; font-weight: 600; }
-
-  .checklist { list-style: none; padding: 0; margin: 20px 0 0; }
-  .checklist li { position: relative; padding: 12px 0 12px 26px; border-bottom: 1px solid var(--line); }
-  .checklist li:last-child { border-bottom: 0; }
-  .checklist li::before { content: ""; position: absolute; left: 6px; top: 23px; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
 
   @media (max-width: 860px) {
     .row2, .roles, .levels, .modes-cmp { grid-template-columns: minmax(0, 1fr); }
@@ -107,7 +98,7 @@
       <p>但"红绿蓝各多少"不符合人的直觉。调颜色时更好用的是 <b>HSL</b>：<b>色相</b>（什么颜色，0～360°的色环）、<b>饱和度</b>（多鲜艳）、<b>明度</b>（多亮）。比如"同一个蓝，调深一点"，就是只改明度。</p>
       <p>拖动下面的滑块试试。右边两个数字是这个颜色作为文字放在白底、黑底上的<b>对比度</b>，第 05 节会细讲。这里先留意一个反直觉的现象：把明度固定在 50%，只拖色相，黄色（60°）在白底上只有 1.07:1，蓝色（240°）却有 8.59:1。<b>HSL 的"明度"只是数学上的值，不等于人眼感到的亮度</b>，所以一个颜色看不看得清，不能凭 HSL 数值猜，要算对比度。</p>
     </div>
-    <div class="tool-box">
+    <div class="demo">
       <div class="row2">
         <div>
           <div class="slider"><label for="h">色相 H <span id="hv"></span></label><input type="range" id="h" min="0" max="360" value="212"></div>
@@ -199,8 +190,8 @@
       <h2><span class="num">04</span>苹果的系统色板，以及一个意外发现</h2>
       <p>下面是 HIG 里 12 种系统颜色的官方取值，分四种模式。每块下面的数字，是这个颜色<b>作为文字</b>放在该模式背景上（浅色用白底，深色用黑底）的对比度：</p>
     </div>
-    <div class="tool-box">
-      <div class="modes" role="group" aria-label="显示模式">
+    <div class="demo">
+      <div class="demo-controls" id="palette-modes" role="group" aria-label="显示模式">
         <button type="button" data-mode="0" aria-pressed="true">浅色</button>
         <button type="button" data-mode="1" aria-pressed="false">深色</button>
         <button type="button" data-mode="2" aria-pressed="false">浅色 · 提高对比度</button>
@@ -237,7 +228,7 @@
       <p>不能点的（禁用状态的）控件、纯装饰、Logo 不受限制。苹果的说法和 WCAG 一致：HIG 的暗色模式一章写着，"对比度至少不低于 4.5:1；自定义的前景和背景色，争取做到 7:1，尤其是小字"。</p>
       <p>用下面的计算器试试，或者直接点几个真实例子：</p>
     </div>
-    <div class="tool-box">
+    <div class="demo">
       <div class="row2">
         <div>
           <div class="cc-pick">
@@ -304,8 +295,8 @@
       <p>一篇 2012 年的同行评审综述统计：欧洲裔男性约 8%、女性约 0.4% 有红绿色觉缺陷；中国和日本男性约 4%～6.5%。也就是说，一个十万男性用户的 App，可能有几千人分不清你的红色和绿色。</p>
       <p>WCAG 1.4.1 和 HIG 都要求：<b>颜色不能是传递信息的唯一方式</b>，要同时配上文字、图标或形状。点下面的"去色测试"，把颜色全部去掉，看看哪一边还能看懂：</p>
     </div>
-    <div class="tool-box gray-test" id="gray-test">
-      <div class="modes"><button type="button" id="gray-btn" aria-pressed="false">去色测试</button></div>
+    <div class="demo">
+      <div class="demo-controls"><button type="button" data-action="gray">去色测试</button></div>
       <div class="samples" style="--cols:2;margin-top:0">
         <div class="sample">
           <div class="cap"><span>只靠颜色</span><span class="verdict no">去色后分不清</span></div>
@@ -472,9 +463,9 @@
         return `<div class="sw" style="color:${dark ? "#f2f2f7" : "#1c1c1e"}"><i style="background:${hex(c)}"></i><div><b>${name}</b><br>${c.join(", ")}<br><span class="cr" style="color:${ok ? (dark ? "#6ee7a0" : "#1d7a3a") : (dark ? "#ff8a80" : "#b3261e")}">${fmt(r)} ${ok ? "✓" : "✗"}</span></div></div>`;
       }).join("");
     }
-    document.querySelectorAll(".modes button[data-mode]").forEach((b) =>
+    document.querySelectorAll("#palette-modes button").forEach((b) =>
       b.addEventListener("click", () => {
-        document.querySelectorAll(".modes button[data-mode]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+        document.querySelectorAll("#palette-modes button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
         render(+b.dataset.mode);
       })
     );
@@ -497,11 +488,6 @@
     apply();
   })();
 
-  // 07 去色测试
-  (function () {
-    const box = document.getElementById("gray-test"), btn = document.getElementById("gray-btn");
-    btn.addEventListener("click", () => { const on = !box.classList.contains("is-gray"); box.classList.toggle("is-gray", on); btn.setAttribute("aria-pressed", String(on)); });
-  })();
 </script>
 </body>
 </html>
