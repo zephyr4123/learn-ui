@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>实例分析 01 · SpeakMore 官网</title>
+<link rel="stylesheet" href="../../assets/lesson.css">
+<style>
+  /* 截图：外框和说明文字 */
+  .shot { margin: 24px 0 0; }
+  .shot img { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+  .shot figcaption { font-size: 14px; line-height: 1.65; color: var(--text-2); margin-top: 10px; max-width: 40em; }
+  .shot.narrow img { max-width: 390px; }
+  .shot.mid img { max-width: 740px; }
+  .shots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin-top: 24px; align-items: start; }
+  .shots .shot { margin: 0; }
+  .shots.phones { grid-template-columns: repeat(2, minmax(0, 300px)); }
+  .orphans { display: grid; gap: 10px; margin-top: 20px; }
+  .orphans img { display: block; max-width: 100%; height: auto; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+  @media (max-width: 700px) { .shots, .shots.phones { grid-template-columns: minmax(0, 1fr); } }
+
+  /* 标注颜色图例 */
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 14px; color: var(--text-2); margin-top: 12px; }
+  .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+
+  /* 按 SpeakMore 的实测样式重排的样张（浅底，深色模式下也保持原样） */
+  .sm { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", sans-serif; color: #121921; }
+  .sm .sub { color: #4e5661; }
+  .sm .tt { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", sans-serif; font-weight: 600; letter-spacing: -0.01em; line-height: 1.15; word-break: keep-all; text-wrap: balance; }
+  /* 本页正文尽量避免最后一行只剩一两个字（不支持的浏览器按默认换行） */
+  .prose p, .prose li, .shot figcaption { text-wrap: pretty; }
+  .sizes { display: grid; gap: 6px; }
+  .sizes div { display: grid; grid-template-columns: 48px 1fr; align-items: baseline; gap: 12px; }
+  .sizes span:first-child { font-size: 12px; color: #85858a; font-variant-numeric: tabular-nums; }
+
+  /* 色板 */
+  .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-top: 20px; }
+  .sw { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--surface); font-size: 13px; line-height: 1.5; }
+  .sw .chip { height: 56px; display: grid; place-items: center; font-size: 15px; font-weight: 600; }
+  .sw .info { padding: 8px 10px; color: var(--text-2); }
+  .sw .info b { color: var(--text); font-weight: 600; }
+
+  /* 问题表（与第 9 课同样式） */
+  .findings { width: 100%; border-collapse: collapse; font-size: 14px; line-height: 1.6; }
+  .findings th, .findings td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+  .findings th { font-size: 13px; color: var(--text-2); font-weight: 600; white-space: nowrap; }
+  .sev { display: inline-block; min-width: 22px; text-align: center; font-weight: 700; border-radius: 6px; padding: 0 6px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .sev.s2 { background: #fff4d6; color: #8a5a00; }
+  .sev.s1 { background: var(--surface-2); color: var(--text-2); }
+  .sev.s0 { background: var(--accent-soft); color: var(--accent); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .sev.s2 { background: #3a2f12; color: #f0c45a; } }
+  .good { list-style: none; padding: 0; margin: 16px 0 0; }
+  .good li { position: relative; padding: 8px 0 8px 26px; border-bottom: 1px solid var(--line); }
+  .good li:last-child { border-bottom: 0; }
+  .good li::before { content: "✓"; position: absolute; left: 2px; top: 8px; color: var(--good); font-weight: 700; }
+</style>
+</head>
+<body>
+<main class="page">
+
+  <nav class="crumb"><a href="../../index.html">← 课程目录</a></nav>
+
+  <header class="prose">
+    <p class="eyebrow">实例分析 01</p>
+    <h1>SpeakMore 官网</h1>
+    <p class="lead">用第 9 课的八步看法，完整看一遍 <a href="https://speakmore.zephyrxiang.com" target="_blank" rel="noopener">speakmore.zephyrxiang.com</a>。每个判断都配上量出来的数字和依据：好在哪、差在哪、为什么。</p>
+    <p class="meta">截取于 2026-11-08 · 桌面 1440 × 900 · 手机 390 × 844 · 约 25 分钟 · 纯讲解</p>
+    <div class="legend">
+      <span><i style="background:#1c6fd1"></i>蓝色标注：量出来的数值</span>
+      <span><i style="background:#e8590c"></i>橙色标注：问题</span>
+    </div>
+  </header>
+
+  <!-- 00 -->
+  <section class="prose">
+    <h2><span class="num">00</span>先说结论</h2>
+    <p>这个页面在<b>"有规律"</b>这一层做得很到位：字号、颜色、间距都来自一张很短的清单，而且同一种角色永远用同一个值。9 个内容区块的骨架完全一样：上下留白 208px，标题 60px，左边缘都在同一条线上。对比度、深色模式、减弱动态效果、键盘焦点这些常被省掉的地方，它也都做了。</p>
+    <p>问题不在"好不好看"，主要在<b>内容和页面长度</b>：产品截图被缩得太小，里面的字读不出来；页面有 15 屏长，手机上又没有导航；有一处文案和内容数量对不上。另外还有几处小的排版细节。</p>
+    <div class="callout">
+      <p><b>为什么你会觉得"还行"，却说不出为什么</b>：你感觉到的整齐和高级，主要来自三件能量出来的事。一是<b>重复</b>，每个区块长得一样，眼睛很快就学会了这页的规律（第 1 课："好看"的第一层答案是有规律）。二是<b>颜色极少、对比很高</b>，几乎只有黑、白、灰。三是<b>字号落差大</b>，区块标题是正文的 3.75 倍，主次一眼就分得开（第 5 课）。</p>
+    </div>
+    <p>下面按八步逐项看。最后有一张汇总表。</p>
+  </section>
+
+  <!-- 01 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">01</span>目标：首屏回答了什么</h2>
+      <p>先说一句话：<b>点进官网的人，想知道"这是什么、对我有没有用、怎么装"。</b>用这句话去对首屏：</p>
+    </div>
+    <figure class="shot">
+      <img src="img/hero.webp" width="1440" height="900" alt="SpeakMore 首屏，标注了标题、副标题、两个下载按钮、Intel 链接和产品截图的实测数值">
+      <figcaption>桌面首屏。蓝色标注的数字都是浏览器里实测的。</figcaption>
+    </figure>
+    <div class="prose" style="margin-top:24px">
+      <ul>
+        <li><b>是什么</b>：76px 的标题"口述成文，划词即译"，八个字说清两个功能。</li>
+        <li><b>在哪用、多少钱</b>：副标题"Mac 与 Windows……开源免费"。</li>
+        <li><b>怎么装</b>：两个下载按钮。</li>
+        <li><b>长什么样</b>：下方的产品窗口截图，按原尺寸的 89% 显示，里面的字还看得清。</li>
+      </ul>
+      <p>四个问题，首屏全部回答了。下载按钮还有一个好细节：<b>按平台分开</b>，替用户先做了"选哪个安装包"这个决定。Intel 版不常用，就降成一个文字链接，放在 Apple 按钮正下方，两者的中线都在 x = 598。这是第 4 课的<b>接近性</b>加第 5 课的<b>先弱化再强调</b>：靠得近，说明"这是 Mac 的另一个版本"；做成文字链接，说明"它是次要的"。</p>
+      <div class="callout">
+        <p><b>两个按钮一样醒目，算不算问题？</b>第 5、6 课说过，一组按钮里只给一个醒目样式。但这里的两个按钮是<b>同一个操作的两个版本</b>，访客只会点自己平台那一个，不存在"该先点哪个"的困扰，所以属于合理的例外。想再进一步的话，常见做法是检测访客的系统，把对应平台的按钮放在前面，或者只把它做成实心。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">02</span>眯眼：最先跳出来的是什么</h2>
+      <p>把首屏模糊掉，还能分辨出来的顺序是：<b>大标题 → 两个黑色按钮 → 产品窗口</b>。正好对应第 1 步的"是什么 → 怎么装 → 长什么样"。</p>
+    </div>
+    <figure class="shot">
+      <img src="img/squint.webp" width="1440" height="900" alt="首屏模糊后的样子：大标题和两个黑色按钮最明显" loading="lazy">
+      <figcaption>首屏整体模糊 10px。</figcaption>
+    </figure>
+    <div class="prose" style="margin-top:24px">
+      <p>注意按钮是怎么"跳"出来的：全页没有用彩色的强调色，靠的是<b>浅底上的一小块纯黑</b>。黑色胶囊的面积不大，但它和背景的明暗差是全屏最大的，所以眼睛会落在那里。苹果官网也常用这种"只靠黑白"的做法。</p>
+    </div>
+  </section>
+
+  <!-- 03 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">03</span>文字</h2>
+      <h3>字体：全部是系统字体</h3>
+      <p>英文用 SF Pro，中文用苹方，都是系统自带，不用加载任何字体文件。细节在于：标题指定 <b>SF Pro Display</b>，正文指定 <b>SF Pro Text</b>。这是苹果的"光学尺寸"：同一套字体分大字号版和小字号版，大字号版字形更紧凑，小字号版字间更松、更好认。大数字用了圆体（SF Pro Rounded），代码用等宽字体，一共 4 种，全都是系统字体。</p>
+
+      <h3 style="margin-top:28px">字号：按角色分，同一角色永远同一个值</h3>
+      <p>全页一共量到 22 种字号，其中 8 种是"&lt; 2 秒""¥2.63"这类大数字和它旁边的单位，按比例缩放；剩下 14 种是文字角色：</p>
+    </div>
+    <div class="spec-wrap">
+      <table class="spec" style="min-width:560px">
+        <thead><tr><th>角色</th><th>字号</th><th>字重</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>收尾标题"立即开始"</td><td class="num">80</td><td class="num">650</td><td>全页最大的字，和首屏呼应</td></tr>
+          <tr><td>首屏标题</td><td class="num">76</td><td class="num">650</td><td>字距 −1%</td></tr>
+          <tr class="hl"><td>区块标题（9 个）</td><td class="num">60</td><td class="num">650</td><td>9 个完全一样：行高 1.12，字距 −1%</td></tr>
+          <tr><td>小节标题</td><td class="num">48 / 32</td><td class="num">650 / 600</td><td>"国内源下载"48；"直出 / 混合 / 离线"32</td></tr>
+          <tr><td>三项功能标题</td><td class="num">24</td><td class="num">600</td><td></td></tr>
+          <tr><td>引导语、演示文字</td><td class="num">22</td><td class="num">500 / 400</td><td>首屏副标题、口述演示</td></tr>
+          <tr><td>卖点小标题</td><td class="num">18</td><td class="num">600</td><td>"16 种目标语言"等</td></tr>
+          <tr><td>说明文字</td><td class="num">17 / 16 / 15</td><td class="num">400</td><td>见下文</td></tr>
+          <tr><td>导航、标签、页脚</td><td class="num">14 / 13 / 12</td><td class="num">400 / 600</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="prose" style="margin-top:20px">
+      <p>第 2 课说"一个界面 3～5 种字号"，这里多得多。但这是一个 15 屏长的营销页，不是一个 App 界面；按屏看，每屏大约 4～6 种。更重要的是两点，它都做到了：</p>
+      <ul>
+        <li><b>同一角色永远同一个值</b>：9 个区块标题的字号、字重、行高、字距一模一样。</li>
+        <li><b>落差拉得开</b>：区块标题 60 ÷ 正文 16 = 3.75 倍，远超第 5 课说的 1.5 倍。</li>
+      </ul>
+      <p><b>问题：说明文字挤着 17、16、15、14 四个字号</b>，相邻只差 1px。三项功能下的说明是 17px，翻译段卖点下的说明是 16px，识别方式里的列表是 15px，它们都是"标题下面的一句说明"。1px 的差别人眼分不出来，放在一起都很难认，分散在不同屏里就完全看不出。所以这四个字号没有带来层级，只是让清单变长了。建议合成两档：说明 17，次要信息 14。</p>
+    </div>
+    <div class="paper sm" style="margin-top:16px; max-width:520px">
+      <div class="sizes">
+        <div><span>17px</span><span class="sub" style="font-size:17px">口述，整理后写入光标处</span></div>
+        <div><span>16px</span><span class="sub" style="font-size:16px">设置中预设多种，口述时临时切换</span></div>
+        <div><span>15px</span><span class="sub" style="font-size:15px">上传音频 · 需要密钥</span></div>
+        <div><span>14px</span><span class="sub" style="font-size:14px">功能 · 识别方式 · 性能 · 模型</span></div>
+      </div>
+    </div>
+    <p class="cite">按 SpeakMore 的实测颜色和字号重排。即使并排放，17 和 16 也很难分清。</p>
+
+    <div class="prose" style="margin-top:28px">
+      <h3>字重：4 档，其中 650 对中文不起作用</h3>
+      <p>量到的字重有 400、500、600、650 四档（第 2 课建议 2～3 种）。650 这一档值得多说一句。我用页面的字体设置，在画布上分别以 600、650、700、800、900 画"成文规整"，五次画出来的像素<b>完全相同</b>；换成"App PDF"，每档都不一样。</p>
+      <p>原因是：苹方是"静态字体"，只有几档固定的粗细，最粗到 600（中粗体）。浏览器找不到 650，就退回最接近的 600。而英文用的 SF 是"可变字体"，粗细可以连续调，650 就真的是 650。结果是像"命令行与 App 对等"这样的中英混排标题，英文会比中文略粗一点。影响很小，但值得记住：<b>给中文设字重，超过 600 就没有区别了</b>。</p>
+
+      <h3 style="margin-top:28px">换行：标题处理得很好，有三处小瑕疵</h3>
+      <p>标题用了 <code>word-break: keep-all</code> 加 <code>text-wrap: balance</code>。前者让中文连续的字之间不能断，只能在标点和空格处断；后者让几行尽量一样长。效果是手机上标题都在逗号处换行，比如"口述成文，／划词即译"。中文网页里很少有人注意这一点。</p>
+      <p>但同一个规则在副标题上出了问题。中文之间不能断，剩下的断点只有英文单词之间的空格，于是手机上断成了"Mac 与 Windows ／ 上的语音输入与翻译"，"Windows 上"被拆开了。</p>
+    </div>
+    <div class="shots phones">
+      <figure class="shot">
+        <img src="img/mobile.webp" width="390" height="844" alt="手机首屏：标题在逗号处换行；副标题断在 Windows 和上的之间；顶部导航只剩 GitHub 和下载" loading="lazy">
+        <figcaption>手机首屏（390 × 844）。</figcaption>
+      </figure>
+      <div class="prose" style="align-self:center">
+        <p><b>改法</b>（已在浏览器里试过）：把"Windows"和"上"之间的空格换成不换行空格，在"上的"后面放一个允许断行的位置：</p>
+        <pre class="code" style="white-space:pre-wrap">Mac 与 Windows&amp;nbsp;上的&lt;wbr&gt;语音输入与翻译，开源免费</pre>
+        <p>改完断成"Mac 与 Windows 上的 ／ 语音输入与翻译，开源免费"。</p>
+      </div>
+    </div>
+    <div class="prose" style="margin-top:24px">
+      <p>另外有三段说明，最后一行只剩一两个字：</p>
+    </div>
+    <div class="orphans">
+      <img src="img/orphan-1.webp" width="416" height="76" alt="最后一行只剩「钟。」" loading="lazy">
+      <img src="img/orphan-2.webp" width="459" height="73" alt="最后一行只剩「关。」" loading="lazy">
+      <img src="img/orphan-3.webp" width="459" height="79" alt="最后一行只剩「¥0.0008。」" loading="lazy">
+    </div>
+    <div class="prose" style="margin-top:16px">
+      <p>这三段用的是默认换行。给它们也加上标题用的 <code>text-wrap: balance</code>，两行就会拉平：实测三段的两行宽度分别从 366 / 32、413 / 30、374 / 82 变成 192 / 206、225 / 218、221 / 239。另一个选项 <code>text-wrap: pretty</code> 在 Chrome 里只把最后一行从 2 个字拉到 3 个字，不够。</p>
+    </div>
+  </section>
+
+  <!-- 04 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">04</span>颜色</h2>
+      <h3>中性色：同一个色相，只改亮度</h3>
+      <p>页面的颜色用 OKLCH 写。它用三个数描述一个颜色：亮度、彩度、色相，其中亮度是按人眼感受均匀分布的。这个页面所有的灰都取自同一个色相（255，偏冷的蓝灰），只改亮度。好处是主文字和次要文字的明暗差在人眼里很稳定，以后换色相也不用重新调。</p>
+    </div>
+    <div class="swatches">
+      <div class="sw"><div class="chip" style="background:#fbfcfd;color:#121921">Aa</div><div class="info"><b>背景</b><br>#FBFCFD</div></div>
+      <div class="sw"><div class="chip" style="background:#f0f3f6;color:#121921">Aa</div><div class="info"><b>浅灰区块</b><br>#F0F3F6</div></div>
+      <div class="sw"><div class="chip" style="background:#06070a;color:#f3f5f8">Aa</div><div class="info"><b>黑色区块</b><br>#06070A</div></div>
+      <div class="sw"><div class="chip" style="background:#fbfcfd;color:#121921">主文字</div><div class="info"><b>#121921</b><br>白底 17.2:1</div></div>
+      <div class="sw"><div class="chip" style="background:#fbfcfd;color:#4e5661">次要文字</div><div class="info"><b>#4E5661</b><br>白底 7.2:1 · 灰底 6.7:1</div></div>
+      <div class="sw"><div class="chip" style="background:#06070a;color:#afb8c4">次要文字</div><div class="info"><b>#AFB8C4</b><br>黑底 10.1:1</div></div>
+      <div class="sw"><div class="chip" style="background:#f0f3f6;color:#2b5c97">链接</div><div class="info"><b>#2B5C97</b><br>灰底 6.1:1</div></div>
+    </div>
+    <div class="prose" style="margin-top:20px">
+      <p><b>对比度全部达标，而且很高。</b>普通文字的标准是 4.5:1（WCAG AA），这里最低的也有 6.1:1，次要灰达到了更严的 7:1（AAA）。很多模仿苹果风的页面会把次要灰调得很浅，比如白底上的 #999，只有 2.8:1，看着"高级"但看不清。这里没有犯这个错。</p>
+
+      <h3 style="margin-top:28px">强调色：几乎没有</h3>
+      <p>能点的地方只有两种样子：黑色胶囊按钮，和蓝色文字链接。这个蓝只在"在 GitHub 查看源码"和键盘焦点框上出现。完全符合第 3 课"强调色只给可点击的地方"。</p>
+
+      <h3 style="margin-top:28px">语义色：全页颜色用得最好的地方</h3>
+      <p>"三种识别方式"这一段，用一种朱砂红（代码里的颜色名就叫 <code>cinnabar</code>）表示<b>数据离开了本机</b>，只出现在三个地方：上传路径的线和云端节点，"上传音频 / 只上传文字"前面的圆点，以及"↑ 音频""↑ 文字"这两个小标签。完全不上传的"离线"一行，一点红都没有。</p>
+    </div>
+    <figure class="shot">
+      <img src="img/ways.webp" width="1280" height="991" alt="三种识别方式的示意图，标注了虚线框云端、实线框本机、朱砂红上传路径和红蓝圆点的含义" loading="lazy">
+      <figcaption>颜色等于意义：红 = 上传，深蓝 = 本机处理。红线旁边还写着"↑ 音频"，不只靠颜色（WCAG 1.4.1，第 3 课）。</figcaption>
+    </figure>
+    <div class="prose" style="margin-top:24px">
+      <p>一个颜色只表达一种意思，全页都守住了，而且颜色之外还配了文字、虚实线框和图标。去掉颜色（比如红绿色弱的人来看），这张图依然能看懂。</p>
+
+      <h3 style="margin-top:28px">两色标题：用得准的时候很好，用多了就变味</h3>
+      <p>大标题前半句用次要灰，后半句用主文字色。这是苹果官网常见的写法，作用是把一句话分成<b>"铺垫 → 重点"</b>，让眼睛落在后半句。</p>
+    </div>
+    <div class="samples" style="--cols:3">
+      <div class="sample">
+        <div class="cap"><span>铺垫 → 重点</span><span class="verdict ok">用得准</span></div>
+        <div class="paper sm"><div class="tt" style="font-size:28px"><span class="sub">口述随意，</span>成文规整</div></div>
+        <p style="font-size:14px;margin:10px 0 0;color:var(--text-2)">前半句是用户的现状，后半句是产品给的结果。</p>
+      </div>
+      <div class="sample">
+        <div class="cap"><span>两个并列的卖点</span><span class="verdict no">弱化了一半</span></div>
+        <div class="paper sm"><div class="tt" style="font-size:28px"><span class="sub">速度快，</span>占用少</div></div>
+        <p style="font-size:14px;margin:10px 0 0;color:var(--text-2)">"速度快"和"占用少"同样重要，灰掉前一个等于把一个卖点调弱了。</p>
+      </div>
+      <div class="sample">
+        <div class="cap"><span>单色</span><span class="verdict ok">反而突出</span></div>
+        <div class="paper sm"><div class="tt" style="font-size:28px">数据只留本机</div></div>
+        <p style="font-size:14px;margin:10px 0 0;color:var(--text-2)">在一串两色标题里，这个单色标题反而显得更有分量。</p>
+      </div>
+    </div>
+    <div class="prose" style="margin-top:20px">
+      <p>11 个大标题里有 7 个用了两色，另外"国内源下载 ／ 快十余倍"这个小节标题也用了。重复这么多次，它就从"强调"变成了一种装饰性的节奏。用一个手法之前，先问它表达的是什么关系：铺垫和重点，适合两色；并列，就不适合。</p>
+
+      <h3 style="margin-top:28px">深色模式：做完整了，而且没有简单反色</h3>
+      <p>系统切到深色，背景、文字、按钮都跟着变：黑色按钮变成白色按钮，首屏的产品截图也换成了深色版的 App 截图。很多网站做深色模式会漏掉截图。</p>
+    </div>
+    <figure class="shot">
+      <img src="img/dark-hero.webp" width="1440" height="900" alt="深色模式下的首屏：白色按钮，深色版产品截图" loading="lazy">
+      <figcaption>深色模式首屏。</figcaption>
+    </figure>
+    <div class="prose" style="margin-top:24px">
+      <p>还有一个容易忽略的地方。浅色模式下，"性能"这一段用黑底，在一片浅色里制造一次节奏变化。到了深色模式，整页都是深色，没法再"反过来"，它的做法是让这一段比相邻的段<b>再暗一档</b>（亮度 0.19 → 0.13）。节奏弱了，但还在。这就是第 3 课说的"暗色模式不是反色"。</p>
+    </div>
+    <div class="shots">
+      <figure class="shot">
+        <img src="img/rhythm-light.webp" width="1440" height="760" alt="浅色模式：浅灰区块之后进入黑色的性能区块" loading="lazy">
+        <figcaption>浅色：浅灰 → 黑，变化很大。</figcaption>
+      </figure>
+      <figure class="shot">
+        <img src="img/rhythm-dark.webp" width="1440" height="760" alt="深色模式：深灰区块之后进入更暗的性能区块" loading="lazy">
+        <figcaption>深色：深灰 → 更暗，变化小，但还能看出分界。</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- 05 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">05</span>间距与对齐</h2>
+      <p>拿一个区块（"开口即译"）量一遍。其他 8 个区块的骨架和它一样：</p>
+    </div>
+    <figure class="shot">
+      <img src="img/section.webp" width="1440" height="1105" alt="一个区块的间距与对齐标注：上下内边距 208，标题到内容 80，左边缘 176，右边缘 1264" loading="lazy">
+      <figcaption>蓝色色块是留白，虚线是左右边缘。</figcaption>
+    </figure>
+    <div class="prose" style="margin-top:24px">
+      <ul>
+        <li><b>一条左边缘贯穿全页</b>：9 个区块标题的左边缘全在 x = 176。首屏和"立即开始"两屏居中，中间全部左对齐，像一本书的封面、正文、封底。整页的对齐线就这两条：左边缘线和中线（第 4 课：对齐的位置越少越好）。</li>
+        <li><b>内容宽度固定</b>：每个区块最宽 1152px，左右各留 32px，内容区 1088px。</li>
+        <li><b>分组一级比一级紧</b>：区块之间 416px（上一段的下留白 208 + 下一段的上留白 208）&gt; 标题到内容 80px &gt; 小标题到说明约 6px。每一级都差好几倍，哪些东西是一组，一眼就能看出来（第 4 课：组内紧、组间松）。</li>
+      </ul>
+      <p><b>代价是页面很长。</b>桌面版整页 13808px，大约 15 屏；其中区块的上下留白加起来约 4200px，占了三成。留白换来了清楚的分组和"高级感"，代价是滚动距离：想看"隐私"那一段，要往下滚 9382px，差不多 10 屏。桌面上可以点顶部导航直接跳过去。手机上留白已经收紧了（每段上下各 112px），但整页仍有 13962px，约 16.5 屏，而手机版把 6 个导航锚点全去掉了，只剩"GitHub"和"下载"（见上面的手机截图），只能一路滚。</p>
+      <p>第 7 课引过 NN/g 的数据：顶层选项少的时候，别把导航藏起来。这里不是藏进菜单，而是直接没了。可以在手机上加一条横向滚动的锚点栏。</p>
+
+      <h3 style="margin-top:28px">背景交替断了一次</h3>
+      <p>区块之间除了留白，还靠底色交替来分界：白、浅灰、白、浅灰……但"隐私"和"首次引导"两段都是浅灰，中间 416px 同一个颜色，读起来像一段内容中间的空洞。</p>
+    </div>
+    <figure class="shot">
+      <img src="img/seam.webp" width="1440" height="863" alt="隐私区块和首次引导区块之间 416px 的同色留白" loading="lazy">
+      <figcaption>其他区块之间都有底色变化，只有这里没有。改法：让"首次引导"用白底，或者在两段之间加一条分割线。</figcaption>
+    </figure>
+    <div class="prose" style="margin-top:24px">
+      <h3>可点区域</h3>
+      <p>首屏两个下载按钮 232 × 48，很充足。手机顶部的"下载"是 54 × 32，GitHub 图标 36 × 36。网页的标准是 WCAG 2.5.8 的 24 × 24，都达标；按 iOS 习惯的 44pt 算，偏小一点。</p>
+    </div>
+  </section>
+
+  <!-- 06 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">06</span>组件与状态</h2>
+      <p>所有按钮都是胶囊形（圆角等于高度的一半，第 6 课的三种形状之一），卡片统一用大圆角。状态做得很齐，这一点很多官网都省掉了：</p>
+      <ul>
+        <li><b>悬停</b>：主按钮透明度降到 85%。这条样式写在 <code>@media (hover: hover)</code> 里，只在有鼠标的设备上生效，手机上点完不会"粘"在悬停状态。</li>
+        <li><b>按下</b>：按钮缩小到 98%（第 6 课：自定义按钮必须有按下状态）。</li>
+        <li><b>键盘焦点</b>：用 Tab 键依次走过导航和按钮，11 个元素都显示同样的 2px 蓝框，和元素之间隔 3px。</li>
+        <li><b>复制</b>：点安装命令旁的"复制"，按钮变成"✓ 已复制"。</li>
+        <li><b>跑马灯</b>：模型 logo 那一排会自动滚动，鼠标放上去就暂停。</li>
+      </ul>
+    </div>
+    <div class="shots">
+      <figure class="shot">
+        <img src="img/focus.webp" width="560" height="120" alt="按 Tab 键聚焦到下载 Apple 芯片版按钮，外面有一圈蓝色焦点框" loading="lazy">
+        <figcaption>键盘焦点。</figcaption>
+      </figure>
+      <figure class="shot">
+        <img src="img/copied.webp" width="704" height="104" alt="点击复制后按钮显示已复制" loading="lazy">
+        <figcaption>复制之后的反馈。</figcaption>
+      </figure>
+    </div>
+    <div class="prose" style="margin-top:24px">
+      <p>还有两处看不见的细节。一是每张截图都写了具体的替代文字，比如"SpeakMore 主窗口首页：三项功能的快捷键、字数、省时、语速与每日热力图，右上角为当前识别方式"，读屏的人也能知道图里有什么。二是"0.23 秒"这类滚动数字的动画里有一列列 0～9 的数字，这些数字对读屏软件隐藏了，读屏只会读出真实的数值。</p>
+    </div>
+  </section>
+
+  <!-- 07 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">07</span>结构与内容</h2>
+      <p>内容顺序是：是什么 → 三项功能 → 三段演示 → 识别方式 → 性能 → 模型与价格 → 隐私 → 首次引导 → 更多特性 → 开发者 → 下载。先讲"能做什么"，再讲"凭什么信你"（速度、隐私、价格），最后讲"怎么开始"，这个顺序是合理的。三项功能的卡片本身就是链接，点哪个就跳到对应的演示。导航栏停在页面顶部时是透明的，往下滚之后变成半透明的毛玻璃底，和 iOS 导航栏的滚动边缘效果一个思路（第 7 课）。</p>
+
+      <h3 style="margin-top:28px">问题一：截图缩得太小，字读不出来</h3>
+      <p>截图里的字有多大，等于"App 里的字号 × 截图的显示比例"。按截图是 2 倍图换算，几张截图的显示比例是：</p>
+    </div>
+    <div class="spec-wrap">
+      <table class="spec" style="min-width:520px">
+        <thead><tr><th>截图</th><th>显示比例</th><th>App 里 13pt 的字在页面上</th></tr></thead>
+        <tbody>
+          <tr><td>首屏主窗口</td><td class="num">89%</td><td class="num">约 11.6px，看得清</td></tr>
+          <tr><td>网页划词</td><td class="num">87%</td><td class="num">约 11.3px，看得清</td></tr>
+          <tr class="hl"><td>引擎页</td><td class="num">60%</td><td class="num">约 7.8px</td></tr>
+          <tr class="hl"><td>PDF 划词</td><td class="num">59%</td><td class="num">约 7.7px</td></tr>
+          <tr class="hl"><td>首次引导（5 张）</td><td class="num">50%</td><td class="num">约 6.5px</td></tr>
+          <tr class="hl"><td>终端划词</td><td class="num">46%</td><td class="num">约 6px</td></tr>
+          <tr class="hl"><td>手机上（含首屏主窗口）</td><td class="num">28%～36%</td><td class="num">约 4px</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="shots" style="grid-template-columns: minmax(0, 740fr) minmax(0, 300fr)">
+      <figure class="shot">
+        <img src="img/shot-scale.webp" width="740" height="571" alt="引擎页截图按 60% 显示，里面的文字只有约 7.8px" loading="lazy">
+        <figcaption>桌面：引擎页截图。</figcaption>
+      </figure>
+      <figure class="shot">
+        <img src="img/mobile-shots.webp" width="390" height="844" alt="手机上的划词翻译截图，里面的文字只有几像素" loading="lazy">
+        <figcaption>手机：划词翻译的三张截图。</figcaption>
+      </figure>
+    </div>
+    <div class="prose" style="margin-top:24px">
+      <p>第 2 课说 iOS 最小字号是 11pt。字小到 6～8px，截图就只剩"质感"，说明不了功能。"首次引导"这一段的全部内容就是 5 张截图，读不出来，这一段等于没有信息。改法：<b>只截局部</b>，比如引擎页只截右侧的详情卡，按 80% 以上的比例显示。介绍软件功能时，放大局部比缩小全窗口更常见，也更有用。</p>
+
+      <h3 style="margin-top:28px">问题二：标题说"四步"，卡片编号到 05</h3>
+    </div>
+    <figure class="shot">
+      <img src="img/steps.webp" width="1440" height="691" alt="首次引导，四步上手的标题和编号为 04、05 的两张卡片" loading="lazy">
+      <figcaption>轮播翻到最后。</figcaption>
+    </figure>
+    <div class="prose" style="margin-top:24px">
+      <p>仔细看截图能明白：App 的引导确实是 4 步，窗口顶部的进度条是 4 段（功能、快捷键、权限、引擎），第 05 张展示的是引导结束后的引擎页。但读者先看到的是编号，会数出 5 个，然后怀疑是不是自己理解错了。这属于尼尔森原则里的"一致性"问题。改法：第 05 张去掉编号，写成"引导之后：推荐组合一键启用"。</p>
+
+      <h3 style="margin-top:28px">可以讨论：手机访客的目标</h3>
+      <p>在手机上点"下载 Apple 芯片版"，会下载一个手机装不了的 .dmg 安装包。从手机点进来的人，多半是在聊天群或社交网站看到了链接，这一刻能做的只是"了解一下、记住它"。手机版的主按钮可以考虑换成"发送到电脑"或"复制链接"。这是目标层面的判断，不违反哪条规范，所以只列为可以讨论。</p>
+    </div>
+  </section>
+
+  <!-- 08 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">08</span>动态</h2>
+      <p><b>用动画讲故事，是这一页最有说服力的部分。</b>"口述随意，成文规整"这一段，左边逐字打出一段带口头禅的原话，然后"嗯""那个""呃"这些词变淡，右边出现整理好的句子。一张静态截图说不清"整理"是什么意思，这段动画几秒就说清了。</p>
+    </div>
+    <figure class="shot">
+      <img src="img/demo.webp" width="1136" height="391" alt="去除口癖演示的最后一帧：原话里的口头禅变淡，右边是整理后的句子" loading="lazy">
+      <figcaption>演示动画的最后一帧。</figcaption>
+    </figure>
+    <div class="prose" style="margin-top:24px">
+      <ul>
+        <li><b>入场动画</b>：区块滚到眼前时淡入、轻微上移。</li>
+        <li><b>减弱动态效果</b>：在系统里打开后实测，所有内容不用滚动就已经显示，演示直接显示最后一帧，logo 跑马灯变成静止的网格。完整支持（第 8 课）。</li>
+        <li><b>一个小代价</b>：正常动效下，演示要几秒才出结果，滚得快的人看到的是一张空白的"整理结果"卡片。</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 09 -->
+  <section>
+    <div class="prose">
+      <h2><span class="num">09</span>汇总</h2>
+      <h3>做得好的</h3>
+      <ul class="good">
+        <li>一张很短的清单，并且严格复用：9 个区块的字号、留白、左边缘完全一致。</li>
+        <li>对比度全部 ≥ 6.1:1，次要灰达到 7:1。</li>
+        <li>颜色只表达意义：强调色只给可点击的地方；朱砂红只表示"上传"，还配了文字。</li>
+        <li>层级落差大（标题是正文的 3.75 倍），分组一级比一级紧。</li>
+        <li>按钮的悬停、按下、焦点、复制反馈都有。</li>
+        <li>深色模式、减弱动态效果、替代文字都做完整了。</li>
+        <li>用动画讲清了"整理"是什么意思。</li>
+        <li>中文标题只在标点处换行。</li>
+      </ul>
+      <h3 style="margin-top:28px">值得改的</h3>
+      <p>"严重程度"用第 9 课的 NN/g 0～4 级，评级是我的判断。</p>
+    </div>
+    <div class="spec-wrap">
+      <table class="findings" style="min-width:720px">
+        <thead><tr><th>现象</th><th>依据</th><th>严重程度</th><th>改法</th></tr></thead>
+        <tbody>
+          <tr><td>4 组产品截图按 46%～60% 显示，里面的字只有 6～8px，手机上约 4px</td><td>字要读得出来（第 2 课最小 11pt）；内容要服务目标</td><td><span class="sev s2">2</span></td><td>只截局部，按 80% 以上显示</td></tr>
+          <tr><td>手机版去掉了全部导航锚点，整页 16.5 屏只能滚</td><td>NN/g：顶层选项少时别藏导航（第 7 课）</td><td><span class="sev s2">2</span></td><td>手机加横向滚动的锚点栏</td></tr>
+          <tr><td>"四步上手"，卡片编号到 05</td><td>尼尔森原则：一致性</td><td><span class="sev s1">1</span></td><td>第 05 张去编号，写成"引导之后"</td></tr>
+          <tr><td>说明文字用了 17 / 16 / 15 / 14 四个字号，相邻差 1px</td><td>字号差距要拉开（第 2、5 课）</td><td><span class="sev s1">1</span></td><td>合成两档：17 和 14</td></tr>
+          <tr><td>两色标题用在并列句上（"速度快，占用少"）</td><td>先弱化再强调，弱化的应该是次要的（第 5 课）</td><td><span class="sev s1">1</span></td><td>只在"铺垫 → 重点"的句子上用</td></tr>
+          <tr><td>3 处段末只剩一两个字；手机副标题断在"Windows ／ 上的"</td><td>中文排版（第 2 课）</td><td><span class="sev s1">1</span></td><td><code>text-wrap: balance</code>；不换行空格 + <code>&lt;wbr&gt;</code></td></tr>
+          <tr><td>"隐私"和"首次引导"两段同底色，中间 416px 没有分界</td><td>分组要有明确边界（第 4 课）</td><td><span class="sev s1">1</span></td><td>换白底或加分割线</td></tr>
+          <tr><td>字重 650 对中文无效，中英混排时英文略粗</td><td>字重 2～3 种（第 2 课）</td><td><span class="sev s1">1</span></td><td>标题统一用 600</td></tr>
+          <tr><td>手机上点"下载"会得到装不了的安装包</td><td>目标：手机访客此刻想做什么（第 5 课）</td><td><span class="sev s0">讨论</span></td><td>手机上换成"发送到电脑"或"复制链接"</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="prose" style="margin-top:28px">
+      <div class="callout">
+        <p><b>"苹果风"到底学到了什么</b>：这一页用到的苹果式做法有系统字体加光学尺寸、大字号收紧字距、两色标题、黑色胶囊按钮、大面积留白、浅灰与黑色区块交替、滚动后才出现的毛玻璃导航、带阴影的窗口截图。它们的共同点是<b>克制</b>：颜色极少，主次全靠字号和留白区分。</p>
+        <p>前两个问题其实是同一件事的两面。苹果产品页的大留白，是留给铺满屏幕的大图的。这一页学到了留白，截图却被缩小了。结果是页面变长了，图里的内容反而看不清。（这是我的判断，供参考。）</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 要点 -->
+  <section class="prose">
+    <h2>这个例子的要点</h2>
+    <ul class="checklist">
+      <li>"整齐、高级"的感觉主要来自重复：同一角色永远同一个值，比清单本身短不短更重要。</li>
+      <li>字号种类可以多，但相邻两档要拉得开；差 1px 的两档等于一档。</li>
+      <li>次要灰不用调得很浅也能显得"高级"，7:1 一样好看。</li>
+      <li>一个颜色只表达一种意思，再配上文字或形状，去掉颜色也要看得懂。</li>
+      <li>两色标题这类手法，先问它表达什么关系，再决定用不用。</li>
+      <li>截图里的字号 = 原字号 × 显示比例。读不出来的截图只是装饰。</li>
+      <li>静态截图看不到的部分：深色模式、减弱动态效果、键盘焦点、手机宽度，都要实际切过去看。</li>
+    </ul>
+  </section>
+
+  <div class="next">
+    <div>
+      <h3>怎么得到这些数字</h3>
+      <p>用无头浏览器打开页面，用脚本读出每个元素的字号、颜色、位置，再按 WCAG 公式算对比度。截图上的标注框也是按读出来的位置画的。</p>
+    </div>
+    <a class="btn-primary" href="../../index.html">回到目录</a>
+  </div>
+
+  <footer class="refs">
+    <h2>参考资料</h2>
+    <ul>
+      <li><a href="https://www.w3.org/TR/WCAG22/#contrast-minimum" target="_blank" rel="noopener">WCAG 2.2 · 1.4.3 对比度（最低）</a> · <a href="https://www.w3.org/TR/WCAG22/#use-of-color" target="_blank" rel="noopener">1.4.1 颜色的使用</a> · <a href="https://www.w3.org/TR/WCAG22/#target-size-minimum" target="_blank" rel="noopener">2.5.8 目标尺寸（最低）</a></li>
+      <li><a href="https://www.w3.org/TR/css-fonts-4/#font-style-matching" target="_blank" rel="noopener">CSS Fonts Level 4 · 字体匹配算法</a>（找不到 650 时怎么退回 600）</li>
+      <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/text-wrap" target="_blank" rel="noopener">MDN · text-wrap</a> · <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/word-break" target="_blank" rel="noopener">word-break</a> · <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/wbr" target="_blank" rel="noopener">&lt;wbr&gt;</a></li>
+      <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/oklch" target="_blank" rel="noopener">MDN · oklch()</a></li>
+      <li><a href="https://www.nngroup.com/articles/ten-usability-heuristics/" target="_blank" rel="noopener">NN/g · 10 Usability Heuristics</a> · <a href="https://www.nngroup.com/articles/how-to-rate-the-severity-of-usability-problems/" target="_blank" rel="noopener">Severity Ratings</a></li>
+      <li>其余规则的出处，见第 2～9 课页面底部的参考资料。</li>
+    </ul>
+  </footer>
+
+</main>
+</body>
+</html>

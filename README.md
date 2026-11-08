@@ -19,6 +19,7 @@ assets/
   lesson.css               课程页面公共样式（手机/浏览器外框、标注、度量表）
   lesson.js                眯眼测试、标注、度量等演示功能
 lessons/NN-主题/index.html  每一课
+cases/NN-名称/              实例分析：真实页面的完整评审（index.html + img/ 实测截图）
 ```
 
 ## 路线图
